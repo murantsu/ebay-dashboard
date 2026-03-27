@@ -151,7 +151,7 @@ input[type=text]:focus{border-color:var(--acc)}
     <div class="ni act" onclick="nav('overview',this)"><span>📊</span>売上・利益</div>
     <div class="ni" onclick="nav('trend',this)"><span>📈</span>月別推移</div>
     <div class="ni" onclick="nav('products',this)"><span>🏷</span>商品傾向</div>
-    <div class="ni" onclick="nav('timing',this)"><span>🕐</span>曜日・時間帯</div>
+    <div class="ni" onclick="nav('timing',this)"><span>📉</span>詳細分析</div>
     <div class="ni" onclick="nav('ranking',this)"><span>💰</span>単価ランキング</div>
     <div class="ni" onclick="nav('buyers',this)"><span>👤</span>リピーター</div>
     <div class="ni" onclick="nav('countries',this)"><span>🌏</span>国別分析</div>
@@ -247,17 +247,29 @@ input[type=text]:focus{border-color:var(--acc)}
       </div>
     </div>
 
-    <!-- ④ TIMING -->
+    <!-- ④ ANALYTICS -->
     <div class="page" id="p-timing">
       <div id="ab-timing" class="accbar"></div>
       <div class="g2">
-        <div class="card"><div class="ct">曜日別 注文数</div><div class="ch" style="height:220px"><canvas id="c-dow"></canvas></div></div>
-        <div class="card"><div class="ct">時間帯別 注文数（UTC）</div><div class="ch" style="height:220px"><canvas id="c-hour"></canvas></div></div>
+        <div class="card"><div class="ct">曜日別 注文数 <span style="font-size:9px;color:var(--mu);font-weight:400">赤=週末</span></div><div class="ch" style="height:190px"><canvas id="c-dow"></canvas></div></div>
+        <div class="card"><div class="ct">通貨別 売上内訳</div><div class="ch" style="height:190px"><canvas id="c-curr"></canvas></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ct">月別 返金率推移</div><div class="ch" style="height:170px"><canvas id="c-refrate"></canvas></div></div>
+        <div class="card"><div class="ct">月別 平均注文額推移</div><div class="ch" style="height:170px"><canvas id="c-avgord"></canvas></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ct">月別 手数料内訳（積み上げ）</div><div class="ch" style="height:190px"><canvas id="c-feemonth"></canvas></div></div>
+        <div class="card"><div class="ct">広告費率 vs 売上 月別推移</div><div class="ch" style="height:190px"><canvas id="c-adcorr"></canvas></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ct">国別 平均注文額 TOP15</div><div id="ctry-avg-list"></div></div>
+        <div class="card"><div class="ct">国別 返金率</div><div id="ctry-ref-list"></div></div>
       </div>
       <div class="g3">
         <div class="card"><div class="kl">最も売れる曜日</div><div class="kv c-acc" id="t-bestday" style="font-size:16px">—</div><div class="ks" id="t-bestday-v">—</div></div>
-        <div class="card"><div class="kl">最も売れる時間帯</div><div class="kv c-acc4" id="t-besthour" style="font-size:16px">—</div><div class="ks" id="t-besthour-v">—</div></div>
-        <div class="card"><div class="kl">週末 vs 平日比率</div><div class="kv c-gr" id="t-wkratio" style="font-size:16px">—</div><div class="ks">Weekend / Weekday</div></div>
+        <div class="card"><div class="kl">最高返金率月</div><div class="kv c-rd" id="t-refmonth" style="font-size:16px">—</div><div class="ks" id="t-refmonth-v">—</div></div>
+        <div class="card"><div class="kl">最多通貨（USD以外）</div><div class="kv c-acc4" id="t-topcurr" style="font-size:16px">—</div><div class="ks" id="t-topcurr-v">—</div></div>
       </div>
     </div>
 
@@ -833,13 +845,71 @@ function calcCtries(rows){
 }
 
 function calcTiming(rows){
-  const dow=Array(7).fill(0),hour=Array(24).fill(0);
+  const dow=Array(7).fill(0);
   for(const r of rows){
     if((r['Type']||'').trim()!=='Order')continue;
     const dt=parseDate(r['Transaction creation date']);
-    if(dt){dow[dt.getDay()]++;hour[dt.getHours()]++;}
+    if(dt)dow[dt.getDay()]++;
   }
-  return{dow,hour};
+  return{dow};
+}
+
+function calcCurrencies(rows){
+  const m={};
+  for(const r of rows){
+    if((r['Type']||'').trim()!=='Order')continue;
+    const curr=(r['Transaction currency']||'').trim();
+    const gross=toF(r['Gross transaction amount']);
+    const exr=toF(r['Exchange rate'])||1;
+    if(!curr||curr==='--')continue;
+    if(!m[curr])m[curr]={count:0,totalUSD:0};
+    m[curr].count++;
+    // Convert to USD
+    const usd=curr==='USD'?gross:(exr>0?gross*exr:gross);
+    m[curr].totalUSD+=usd;
+  }
+  return m;
+}
+
+function calcMonthlyDetail(rows){
+  const m={};
+  for(const r of rows){
+    const t=(r['Type']||'').trim();
+    const dt=parseDate(r['Transaction creation date']);
+    if(!dt)continue;
+    const key=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    if(!m[key])m[key]={sub:0,ship:0,fvf:0,intl:0,store:0,promo:0,ins:0,ref:0,refCnt:0,orders:0,orderSet:new Set()};
+    if(t==='Order'){
+      m[key].sub+=toF(r['Item subtotal']);m[key].ship+=toF(r['Shipping and handling']);
+      m[key].fvf+=toF(r['Final Value Fee - fixed'])+toF(r['Final Value Fee - variable']);
+      m[key].intl+=toF(r['International fee']);
+      const tid=r['Transaction ID'];
+      if(r['Item title']&&r['Item title']!=='--'&&tid&&tid!=='--'&&!m[key].orderSet.has(tid)){
+        m[key].orderSet.add(tid);m[key].orders++;
+      }
+    }else if(t==='Other fee'){
+      const desc=(r['Description']||'').trim(),amt=toF(r['Net amount']);
+      if(desc.includes('Store'))m[key].store+=amt;
+      else if(desc.includes('Promoted'))m[key].promo+=amt;
+      else if(desc.includes('Insertion'))m[key].ins+=amt;
+      else if(desc.includes('Final Value Fee'))m[key].fvf+=amt;
+    }else if(t==='Refund'){m[key].ref+=toF(r['Net amount']);m[key].refCnt++;}
+  }
+  return m;
+}
+
+function calcCtryDetail(rows){
+  const m={};
+  for(const r of rows){
+    const t=(r['Type']||'').trim();
+    const c=(r['Ship to country']||'').trim();
+    if(!c||c==='--')continue;
+    if(!m[c])m[c]={orders:0,total:0,refunds:0};
+    if(t==='Order'&&r['Transaction ID']&&r['Transaction ID']!=='--'){
+      m[c].orders++;m[c].total+=toF(r['Item subtotal']);
+    }else if(t==='Refund'){m[c].refunds++;}
+  }
+  return m;
 }
 
 function calcItems(rows){
@@ -1050,23 +1120,110 @@ function renderProducts(rows){
 
 // ── TIMING ──
 function renderTiming(rows){
-  const{dow,hour}=calcTiming(rows);
-  const dowLabels=DAYS;
-  const hourLabels=Array.from({length:24},(_,i)=>i+'時');
+  const{dow}=calcTiming(rows);
+  const currs=calcCurrencies(rows);
+  const monthly=calcMonthlyDetail(rows);
+  const ctryDetail=calcCtryDetail(rows);
+  const keys=Object.keys(monthly).sort();
 
-  makeChart('c-dow',{type:'bar',data:{labels:dowLabels,datasets:[{data:dow,backgroundColor:dow.map((_,i)=>i===0||i===6?'#e8457acc':'#6a7fffcc'),borderColor:dow.map((_,i)=>i===0||i===6?'#e8457a':'#6a7fff'),borderWidth:1,borderRadius:4}]},
+  // 曜日別
+  makeChart('c-dow',{type:'bar',data:{labels:DAYS,datasets:[{data:dow,
+    backgroundColor:dow.map((_,i)=>i===0||i===6?'#e8457acc':'#6a7fffcc'),
+    borderColor:dow.map((_,i)=>i===0||i===6?'#e8457a':'#6a7fff'),borderWidth:1,borderRadius:4}]},
     options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}},y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}}}}
   });
-  makeChart('c-hour',{type:'bar',data:{labels:hourLabels,datasets:[{data:hour,backgroundColor:'#38e8b0bb',borderColor:'#38e8b0',borderWidth:1,borderRadius:3}]},
-    options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:9}}},y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}}}}
+  const bestDow=dow.indexOf(Math.max(...dow));
+  set('t-bestday',DAYS[bestDow]+'曜日');set('t-bestday-v',dow[bestDow]+'件');
+
+  // 通貨別
+  const currEntries=Object.entries(currs).sort((a,b)=>b[1].totalUSD-a[1].totalUSD);
+  makeChart('c-curr',{type:'doughnut',data:{
+    labels:currEntries.map(([k])=>k),
+    datasets:[{data:currEntries.map(([,v])=>Math.round(v.totalUSD)),
+      backgroundColor:COLS.slice(0,currEntries.length).map(c=>c+'cc'),
+      borderColor:COLS.slice(0,currEntries.length),borderWidth:1}]},
+    options:{cutout:'60%',plugins:{legend:{position:'right',labels:{font:{size:10},padding:8,boxWidth:10,color:'var(--mu2)',
+      generateLabels:chart=>{const d=chart.data;return d.labels.map((l,i)=>({text:`${l}  $${Math.round(d.datasets[0].data[i]).toLocaleString()}`,fillStyle:d.datasets[0].backgroundColor[i],strokeStyle:d.datasets[0].borderColor[i],lineWidth:1,index:i}));}}}}
+    }
+  });
+  const nonUSD=currEntries.filter(([k])=>k!=='USD');
+  if(nonUSD.length){set('t-topcurr',nonUSD[0][0]);set('t-topcurr-v',nonUSD[0][1].count+'件 / $'+Math.round(nonUSD[0][1].totalUSD).toLocaleString());}
+
+  // 月別返金率
+  const refRates=keys.map(k=>{const m=monthly[k];return m.orders?+(m.refCnt/m.orders*100).toFixed(1):0;});
+  const avgLabels=keys.map(k=>k.replace('-','年')+'月');
+  makeChart('c-refrate',{type:'line',data:{labels:avgLabels,datasets:[{data:refRates,borderColor:'#f05060',backgroundColor:'#f0506020',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:'#f05060',borderWidth:2}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:9}}},
+      y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10},callback:v=>v+'%'},min:0}}}
+  });
+  if(refRates.length){
+    const maxRef=Math.max(...refRates);const maxRefIdx=refRates.indexOf(maxRef);
+    set('t-refmonth',avgLabels[maxRefIdx]||'—');set('t-refmonth-v',maxRef.toFixed(1)+'%');
+  }
+
+  // 月別平均注文額
+  const avgOrds=keys.map(k=>{const m=monthly[k];return m.orders?+(( m.sub+m.ship)/m.orders).toFixed(2):0;});
+  makeChart('c-avgord',{type:'line',data:{labels:avgLabels,datasets:[{data:avgOrds,borderColor:'#f0c040',backgroundColor:'#f0c04020',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:'#f0c040',borderWidth:2}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:9}}},
+      y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10},callback:v=>'$'+v}}}}
   });
 
-  const bestDowIdx=dow.indexOf(Math.max(...dow));
-  const bestHourIdx=hour.indexOf(Math.max(...hour));
-  set('t-bestday',DAYS[bestDowIdx]+'曜日');set('t-bestday-v',dow[bestDowIdx]+'件');
-  set('t-besthour',bestHourIdx+'〜'+(bestHourIdx+1)+'時');set('t-besthour-v',hour[bestHourIdx]+'件');
-  const wkend=dow[0]+dow[6],wkday=dow.slice(1,6).reduce((a,b)=>a+b,0);
-  set('t-wkratio',wkday?((wkend/wkday)*100).toFixed(0)+'%':'—');
+  // 月別手数料積み上げ
+  const fvfData=keys.map(k=>Math.abs(monthly[k].fvf));
+  const promoData=keys.map(k=>Math.abs(monthly[k].promo));
+  const storeData=keys.map(k=>Math.abs(monthly[k].store));
+  const intlData=keys.map(k=>Math.abs(monthly[k].intl));
+  const refData=keys.map(k=>Math.abs(monthly[k].ref));
+  makeChart('c-feemonth',{type:'bar',data:{labels:avgLabels,datasets:[
+    {label:'FVF',data:fvfData,backgroundColor:'#f0c040bb',borderColor:'#f0c040',borderWidth:1},
+    {label:'広告費',data:promoData,backgroundColor:'#e8457abb',borderColor:'#e8457a',borderWidth:1},
+    {label:'ストア費',data:storeData,backgroundColor:'#38e8b0bb',borderColor:'#38e8b0',borderWidth:1},
+    {label:'国際手数料',data:intlData,backgroundColor:'#6a7fffbb',borderColor:'#6a7fff',borderWidth:1},
+    {label:'返金',data:refData,backgroundColor:'#f05060bb',borderColor:'#f05060',borderWidth:1},
+  ]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:5,boxWidth:9,color:'var(--mu2)'}}},
+    scales:{x:{stacked:true,grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:9}}},
+            y:{stacked:true,grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10},callback:v=>'$'+Math.round(v/1000)+'k'}}}}
+  });
+
+  // 広告費率 vs 売上
+  const revData=keys.map(k=>{const m=monthly[k];return+(m.sub+m.ship).toFixed(0);});
+  const adRateData=keys.map(k=>{const m=monthly[k];const rev=m.sub+m.ship;return rev?+(Math.abs(m.promo)/rev*100).toFixed(1):0;});
+  makeChart('c-adcorr',{type:'bar',data:{labels:avgLabels,datasets:[
+    {label:'売上',data:revData,backgroundColor:'#34d47abb',borderColor:'#34d47a',borderWidth:1,yAxisID:'y'},
+    {label:'広告費率(%)',data:adRateData,type:'line',borderColor:'#e8457a',backgroundColor:'transparent',tension:.3,pointRadius:4,pointBackgroundColor:'#e8457a',borderWidth:2,yAxisID:'y1'},
+  ]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:6,boxWidth:9,color:'var(--mu2)'}}},
+    scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:9}}},
+      y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10},callback:v=>'$'+Math.round(v/1000)+'k'},position:'left'},
+      y1:{grid:{display:false},ticks:{color:'#e8457a',font:{size:9},callback:v=>v+'%'},position:'right'}}}
+  });
+
+  // 国別平均注文額
+  const ctryAvgEntries=Object.entries(ctryDetail)
+    .filter(([,v])=>v.orders>=2)
+    .map(([c,v])=>({c,avg:v.total/v.orders,orders:v.orders}))
+    .sort((a,b)=>b.avg-a.avg).slice(0,15);
+  const maxAvg=ctryAvgEntries[0]?.avg||1;
+  document.getElementById('ctry-avg-list').innerHTML=ctryAvgEntries.length
+    ?ctryAvgEntries.map(({c,avg,orders},i)=>`
+      <div class="bi"><div class="bm">
+        <span style="font-size:11px;color:${COLS[i%COLS.length]}">${FLAGS[c]||'🌍'} ${CNAME[c]||c}</span>
+        <span class="bct">${fmt(avg)} / ${orders}件</span>
+      </div><div class="bt"><div class="bf" style="width:${avg/maxAvg*100}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('')
+    :'<div class="emp"><div class="ed">データなし（2件以上の国のみ表示）</div></div>';
+
+  // 国別返金率
+  const ctryRefEntries=Object.entries(ctryDetail)
+    .filter(([,v])=>v.orders>=2)
+    .map(([c,v])=>({c,rate:v.orders?v.refunds/v.orders*100:0,refunds:v.refunds,orders:v.orders}))
+    .sort((a,b)=>b.rate-a.rate).slice(0,15);
+  const maxRate=ctryRefEntries[0]?.rate||1;
+  document.getElementById('ctry-ref-list').innerHTML=ctryRefEntries.length
+    ?ctryRefEntries.map(({c,rate,refunds,orders},i)=>`
+      <div class="bi"><div class="bm">
+        <span style="font-size:11px;color:${rate>5?'#f05060':COLS[i%COLS.length]}">${FLAGS[c]||'🌍'} ${CNAME[c]||c}</span>
+        <span class="bct">${rate.toFixed(1)}% (${refunds}/${orders}件)</span>
+      </div><div class="bt"><div class="bf" style="width:${maxRate?rate/maxRate*100:0}%;background:${rate>5?'#f05060':COLS[i%COLS.length]}"></div></div></div>`).join('')
+    :'<div class="emp"><div class="ed">データなし</div></div>';
 }
 
 // ── RANKING ──
@@ -1248,7 +1405,7 @@ function openDrill(fr){
 function closeDrill(){document.getElementById('drill').classList.remove('open');}
 
 // ── NAV ──
-const PAGE_TITLES={overview:'売上・利益',trend:'月別推移',products:'商品傾向',timing:'曜日・時間帯',ranking:'単価ランキング',buyers:'リピーター',countries:'国別分析',unclassified:'未分類手動割当',files:'ファイル管理',keywords:'キーワード設定'};
+const PAGE_TITLES={overview:'売上・利益',trend:'月別推移',products:'商品傾向',timing:'詳細分析',ranking:'単価ランキング',buyers:'リピーター',countries:'国別分析',unclassified:'未分類手動割当',files:'ファイル管理',keywords:'キーワード設定'};
 function nav(page,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
