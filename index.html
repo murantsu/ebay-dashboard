@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eBay Multi-Account Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #080a0f;
+  --surface: #0e1018;
+  --surface2: #161a26;
+  --surface3: #1d2233;
+  --border: #252a3a;
+  --border2: #2f3650;
+  --accent: #f0c040;
+  --accent2: #e8457a;
+  --accent3: #38e8b0;
+  --accent4: #6a7fff;
+  --text: #dde1ef;
+  --muted: #5a6280;
+  --muted2: #8a92b0;
+  --green: #34d47a;
+  --red: #f05060;
+  --orange: #f08030;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  position:fixed;top:0;left:0;width:220px;height:100vh;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:100;
+  transition:transform .3s ease;
+}
+.logo-area{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-0.5px;color:var(--text)}
+.logo span{color:var(--accent)}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+
+.nav-section{padding:16px 12px 0;flex:1;overflow-y:auto}
+.nav-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:0 8px;margin-bottom:8px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:8px;cursor:pointer;font-size:12px;color:var(--muted2);
+  transition:all .15s;margin-bottom:2px;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface3);color:var(--accent);border-left:2px solid var(--accent)}
+.nav-icon{font-size:14px;width:18px;text-align:center}
+
+.account-chips{padding:12px;border-top:1px solid var(--border)}
+.account-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.chip{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;border-radius:7px;border:1px solid var(--border);
+  font-size:11px;cursor:pointer;margin-bottom:4px;
+  transition:all .15s;user-select:none;
+}
+.chip:hover{border-color:var(--border2)}
+.chip.selected{border-color:var(--accent);background:#f0c04010;color:var(--accent)}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.chip.selected .chip-dot{background:var(--accent)}
+.chip-name{flex:1;margin-left:8px}
+.chip-count{font-size:10px;color:var(--muted)}
+
+/* ── MAIN ── */
+#main{margin-left:220px;min-height:100vh;padding:0}
+
+/* ── TOPBAR ── */
+#topbar{
+  position:sticky;top:0;z-index:90;
+  background:var(--bg)ee;backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:12px 28px;display:flex;align-items:center;gap:16px;
+}
+.topbar-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;flex:1}
+.filter-group{display:flex;align-items:center;gap:8px}
+.filter-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+select,input[type=date]{
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:6px;padding:5px 10px;
+  font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;
+  outline:none;
+}
+select:hover,input[type=date]:hover{border-color:var(--border2)}
+.btn{
+  padding:6px 14px;border-radius:6px;border:none;
+  font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;
+  transition:all .15s;
+}
+.btn-primary{background:var(--accent);color:#000;font-weight:700}
+.btn-primary:hover{background:#f8d060}
+.btn-ghost{background:var(--surface2);color:var(--muted2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+
+/* ── CONTENT ── */
+.page{display:none;padding:28px}
+.page.active{display:block}
+
+/* ── SECTION HEADER ── */
+.sh{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:20px;
+}
+.sh-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2)}
+.sh-line{flex:1;height:1px;background:var(--border)}
+.sh-badge{font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--muted)}
+
+/* ── GRID ── */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:28px}
+.g12{display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:28px}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+
+/* ── KPI ── */
+.kpi-label{font-size:10px;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px}
+.kpi-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:5px}
+.kpi-delta{font-size:11px;margin-top:6px}
+.kpi-delta.up{color:var(--green)}
+.kpi-delta.dn{color:var(--red)}
+.c-accent{color:var(--accent)}
+.c-green{color:var(--green)}
+.c-red{color:var(--red)}
+.c-accent4{color:var(--accent4)}
+.c-accent2{color:var(--accent2)}
+
+/* ── BREAKDOWN ── */
+.brow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.brow:last-child{border-bottom:none}
+.brow-lbl{color:var(--muted2)}
+.brow-val{font-weight:500}
+.brow-cat{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);padding:10px 0 3px}
+
+/* ── BAR LIST ── */
+.bar-list{display:flex;flex-direction:column;gap:9px}
+.bar-item{}
+.bar-meta{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;cursor:pointer}
+.bar-name{max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .15s}
+.bar-name:hover{color:var(--accent)}
+.bar-cnt{color:var(--muted)}
+.bar-track{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.16,1,.3,1)}
+
+/* ── COUNTRY ROW ── */
+.crow{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.cflag{font-size:18px;width:24px}
+.cname{font-size:12px;width:110px;color:var(--text)}
+.ctrack{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.cfill{height:100%;border-radius:4px;transition:width .8s ease}
+.cpct{font-size:11px;color:var(--muted);width:38px;text-align:right}
+.ccnt{font-size:10px;color:var(--muted);width:32px;text-align:right}
+
+/* ── CHART WRAP ── */
+.ch{position:relative}
+.ch-260{height:260px}
+.ch-220{height:220px}
+.ch-200{height:200px}
+
+/* ── UPLOAD ZONE ── */
+#upload-zone{
+  border:2px dashed var(--border2);border-radius:14px;
+  padding:48px 32px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--surface);
+  margin-bottom:24px;
+}
+#upload-zone:hover,#upload-zone.drag{border-color:var(--accent);background:#f0c04008}
+#upload-zone h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px}
+#upload-zone p{font-size:12px;color:var(--muted);margin-bottom:16px}
+#fileInput{display:none}
+
+/* ── FILE LIST ── */
+.file-item{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:12px 16px;margin-bottom:8px;
+  animation:fadeUp .3s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.file-icon{font-size:20px}
+.file-info{flex:1}
+.file-name{font-size:12px;color:var(--text);font-weight:500}
+.file-meta{font-size:10px;color:var(--muted);margin-top:3px}
+.file-account{font-size:10px;color:var(--accent);margin-top:2px}
+.file-badge{
+  padding:3px 10px;border-radius:5px;font-size:10px;letter-spacing:.5px;
+  border:1px solid;
+}
+.file-badge.ok{color:var(--green);border-color:var(--green)30;background:var(--green)10}
+.file-badge.dup{color:var(--red);border-color:var(--red)30;background:var(--red)10}
+.file-badge.warn{color:var(--orange);border-color:var(--orange)30;background:var(--orange)10}
+.file-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;transition:color .15s}
+.file-del:hover{color:var(--red)}
+
+/* ── KEYWORD EDITOR ── */
+.kw-editor{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.kw-editor h3{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px}
+.kw-editor p{font-size:11px;color:var(--muted);margin-bottom:16px}
+.kw-cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.kw-cat{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;
+  transition:all .15s;
+}
+.kw-cat:hover{border-color:var(--border2)}
+.kw-cat.active{border-color:var(--accent);color:var(--accent);background:#f0c04010}
+.kw-tags{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;margin-bottom:12px}
+.kw-tag{
+  display:flex;align-items:center;gap:5px;
+  background:var(--surface3);border:1px solid var(--border2);
+  border-radius:20px;padding:3px 10px 3px 12px;font-size:11px;
+}
+.kw-tag-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0;margin-left:2px}
+.kw-tag-del:hover{color:var(--red)}
+.kw-add-row{display:flex;gap:8px}
+.kw-input{
+  flex:1;background:var(--surface2);border:1px solid var(--border);
+  border-radius:7px;padding:7px 12px;font-family:'DM Mono',monospace;
+  font-size:11px;color:var(--text);outline:none;
+}
+.kw-input:focus{border-color:var(--accent)}
+
+/* ── MODAL/DRILLDOWN ── */
+#drilldown{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:#000000b0;backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+#drilldown.open{display:flex}
+.drill-panel{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:16px;width:720px;max-width:95vw;max-height:85vh;
+  overflow-y:auto;padding:28px;animation:popIn .25s cubic-bezier(.16,1,.3,1);
+}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.drill-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.drill-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.drill-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.drill-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--muted2);cursor:pointer;font-size:13px;font-family:'DM Mono',monospace}
+.drill-close:hover{color:var(--text)}
+.drill-g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.drill-items-list{margin-top:16px}
+.drill-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:11px}
+.drill-item:last-child{border-bottom:none}
+.drill-item-title{flex:1;color:var(--text);line-height:1.4}
+.drill-item-meta{color:var(--muted);font-size:10px;margin-top:2px}
+.drill-item-price{color:var(--accent);font-weight:500;white-space:nowrap}
+
+/* ── ALERTS ── */
+.alert{
+  border-radius:8px;padding:10px 14px;font-size:11px;
+  margin-bottom:8px;display:flex;align-items:center;gap:8px;
+}
+.alert-warn{background:#f0803015;border:1px solid #f0803040;color:#f08030}
+.alert-err{background:#f0506015;border:1px solid #f0506040;color:#f05060}
+.alert-ok{background:#34d47a15;border:1px solid #34d47a40;color:#34d47a}
+
+/* ── ACCOUNT INDICATOR ── */
+.acc-bar{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.acc-pill{
+  padding:4px 12px;border-radius:20px;font-size:10px;letter-spacing:.5px;
+  border:1px solid;display:flex;align-items:center;gap:5px;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 32px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--muted2);margin-bottom:6px}
+.empty-desc{font-size:11px;line-height:1.6}
+
+@media(max-width:900px){
+  #sidebar{transform:translateX(-220px)}
+  #main{margin-left:0}
+  .g4,.g3{grid-template-columns:repeat(2,1fr)}
+  .g2,.g21,.g12{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<div id="sidebar">
+  <div class="logo-area">
+    <div class="logo">eBay <span>Pro</span></div>
+    <div class="logo-sub">Multi-Account Dashboard</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">メニュー</div>
+    <div class="nav-item active" onclick="showPage('overview')">
+      <span class="nav-icon">📊</span>売上・利益
+    </div>
+    <div class="nav-item" onclick="showPage('products')">
+      <span class="nav-icon">🏷️</span>商品傾向
+    </div>
+    <div class="nav-item" onclick="showPage('countries')">
+      <span class="nav-icon">🌏</span>国別分析
+    </div>
+    <div class="nav-item" onclick="showPage('files')">
+      <span class="nav-icon">📁</span>CSVファイル管理
+    </div>
+    <div class="nav-item" onclick="showPage('keywords')">
+      <span class="nav-icon">🔖</span>キーワード設定
+    </div>
+  </div>
+  <div class="account-chips">
+    <div class="account-label">アカウント選択</div>
+    <div id="accountChips">
+      <div style="font-size:11px;color:var(--muted);padding:8px 0">CSVをアップロードすると<br>アカウントが表示されます</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div id="main">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="topbar-title" id="topbarTitle">売上・利益ダッシュボード</div>
+    <div class="filter-group">
+      <span class="filter-label">期間</span>
+      <input type="date" id="dateFrom" onchange="applyFilters()">
+      <span style="color:var(--muted);font-size:11px">〜</span>
+      <input type="date" id="dateTo" onchange="applyFilters()">
+      <button class="btn btn-ghost" onclick="clearDates()">全期間</button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: OVERVIEW ══ -->
+  <div class="page active" id="page-overview">
+    <div id="acc-bar-overview" class="acc-bar"></div>
+
+    <!-- KPIs -->
+    <div class="g4">
+      <div class="card">
+        <div class="kpi-label">商品売上</div>
+        <div class="kpi-val c-accent" id="kpi-subtotal">—</div>
+        <div class="kpi-sub">Item Subtotal</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">送料収入</div>
+        <div class="kpi-val c-accent4" id="kpi-shipping">—</div>
+        <div class="kpi-sub">Shipping Revenue</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">総手数料・返金</div>
+        <div class="kpi-val c-red" id="kpi-costs">—</div>
+        <div class="kpi-sub">Fees + Refunds</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">純利益</div>
+        <div class="kpi-val c-green" id="kpi-profit">—</div>
+        <div class="kpi-sub" id="kpi-margin">—</div>
+      </div>
+    </div>
+
+    <!-- BREAKDOWN + DONUT + PROFIT -->
+    <div class="g3">
+      <div class="card">
+        <div class="card-title">収支内訳</div>
+        <div id="breakdown-content">
+          <div class="empty" style="padding:24px 0">
+            <div class="empty-icon">📂</div>
+            <div class="empty-desc">CSVファイルをアップロードしてください</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">支出の内訳</div>
+        <div class="ch ch-220"><canvas id="feeDonut"></canvas></div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#0f1f14 0%,#0a140f 100%);border-color:#1a3a20">
+        <div class="card-title" style="color:var(--green)">月間純利益</div>
+        <div style="text-align:center;padding:24px 0">
+          <div style="font-family:'Syne',sans-serif;font-size:44px;font-weight:800;color:var(--green);letter-spacing:-2px;line-height:1" id="big-profit">—</div>
+          <div style="font-size:10px;color:#34d47a80;letter-spacing:2px;text-transform:uppercase;margin-top:8px">Net Profit</div>
+          <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="background:#ffffff08;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:#34d47a80;margin-bottom:4px">利益率</div>
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--green)" id="big-margin">—</div>
+            </div>
+            <div style="background:#ffffff08;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:#34d47a80;margin-bottom:4px">広告費率</div>
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--accent2)" id="big-adrate">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS STATS -->
+    <div class="g4">
+      <div class="card">
+        <div class="kpi-label">総注文件数</div>
+        <div class="kpi-val" id="kpi-orders" style="font-size:30px">—</div>
+        <div class="kpi-sub">Total Orders</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">返金件数</div>
+        <div class="kpi-val c-red" id="kpi-refunds" style="font-size:30px">—</div>
+        <div class="kpi-sub" id="kpi-refund-rate">—</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">平均注文額</div>
+        <div class="kpi-val c-accent" id="kpi-avg" style="font-size:30px">—</div>
+        <div class="kpi-sub">Avg Order Value</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">eBay収集税（参考）</div>
+        <div class="kpi-val" id="kpi-tax" style="font-size:30px;color:var(--muted2)">—</div>
+        <div class="kpi-sub">eBay Collected Tax</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: PRODUCTS ══ -->
+  <div class="page" id="page-products">
+    <div id="acc-bar-products" class="acc-bar"></div>
+    <div class="g21">
+      <!-- LEFT: category ranking -->
+      <div class="card">
+        <div class="card-title">
+          <span id="cat-section-title">カテゴリ・タイトル別 販売数</span>
+          <div style="display:flex;gap:6px">
+            <select id="cat-type-sel" onchange="renderProducts()" style="font-size:10px;padding:3px 8px">
+              <option value="franchise">フランチャイズ</option>
+              <option value="item_type">アイテム種別</option>
+            </select>
+          </div>
+        </div>
+        <div class="bar-list" id="cat-bar-list"></div>
+      </div>
+      <!-- RIGHT: item type donut + top items -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-title">アイテム種別</div>
+          <div class="ch ch-200"><canvas id="typeDonut"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">集計</div>
+          <div id="prod-stats">
+            <div class="brow"><span class="brow-lbl">識別済み商品</span><span class="brow-val" id="stat-matched">—</span></div>
+            <div class="brow"><span class="brow-lbl">未分類商品</span><span class="brow-val" id="stat-unmatched">—</span></div>
+            <div class="brow"><span class="brow-lbl">総アイテム数</span><span class="brow-val" id="stat-total">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: COUNTRIES ══ -->
+  <div class="page" id="page-countries">
+    <div id="acc-bar-countries" class="acc-bar"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">出荷先国ランキング</div>
+        <div id="country-list-el"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">国別シェア</div>
+        <div class="ch ch-260"><canvas id="countryDonut"></canvas></div>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="card">
+        <div class="kpi-label">最多出荷先</div>
+        <div class="kpi-val c-accent" id="top-country" style="font-size:20px">—</div>
+        <div class="kpi-sub" id="top-country-pct">—</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">英語圏シェア（US+CA+GB+AU）</div>
+        <div class="kpi-val c-accent4" id="eng-share" style="font-size:20px">—</div>
+        <div class="kpi-sub">English-speaking countries</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">出荷先国数</div>
+        <div class="kpi-val" id="country-count" style="font-size:20px">—</div>
+        <div class="kpi-sub">Unique destination countries</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: FILES ══ -->
+  <div class="page" id="page-files">
+    <div id="alerts-area"></div>
+    <div id="upload-zone">
+      <div style="font-size:40px;margin-bottom:12px">📤</div>
+      <h3>CSVファイルをアップロード</h3>
+      <p>クリックまたはドラッグ＆ドロップ<br>複数ファイル対応 — eBay取引レポートCSV</p>
+      <button class="btn btn-primary" id="upload-btn">ファイルを選択</button>
+    </div>
+    <input type="file" id="fileInput" accept=".csv" multiple>
+
+    <div class="sh"><span class="sh-title">アップロード済みファイル</span><div class="sh-line"></div><span class="sh-badge" id="file-count-badge">0件</span></div>
+    <div id="file-list-el">
+      <div class="empty">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">まだファイルがありません</div>
+        <div class="empty-desc">eBay取引レポートCSVをアップロードしてください</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: KEYWORDS ══ -->
+  <div class="page" id="page-keywords">
+    <div class="kw-editor">
+      <h3>フランチャイズ・カテゴリ キーワード設定</h3>
+      <p>商品タイトルから自動でカテゴリを判定するキーワードを管理できます。左のカテゴリを選んでキーワードを追加・削除してください。</p>
+
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <!-- Category list -->
+        <div style="width:180px;flex-shrink:0">
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">カテゴリ</div>
+          <div id="kw-cat-list" class="kw-cats" style="flex-direction:column;gap:4px"></div>
+          <div style="margin-top:12px;display:flex;gap:6px">
+            <input type="text" class="kw-input" id="new-cat-input" placeholder="新カテゴリ名" style="font-size:10px;padding:5px 8px">
+            <button class="btn btn-primary" onclick="addCategory()" style="padding:5px 10px;font-size:10px">追加</button>
+          </div>
+        </div>
+        <!-- Keywords for selected category -->
+        <div style="flex:1">
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px" id="kw-selected-label">カテゴリを選択してください</div>
+          <div id="kw-tags-area" class="kw-tags"></div>
+          <div class="kw-add-row" id="kw-add-row" style="display:none">
+            <input type="text" class="kw-input" id="new-kw-input" placeholder="キーワードを入力（例: Evangelion）">
+            <button class="btn btn-primary" onclick="addKeyword()">追加</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="card">
+      <div class="card-title">マッチングプレビュー <span style="font-size:10px;font-weight:400;color:var(--muted)">（現在のキーワードで商品タイトルを再判定）</span></div>
+      <div id="kw-preview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DRILLDOWN MODAL ══ -->
+<div id="drilldown" onclick="if(event.target===this)closeDrill()">
+  <div class="drill-panel">
+    <div class="drill-header">
+      <div>
+        <div class="drill-title" id="drill-title">—</div>
+        <div class="drill-sub" id="drill-sub">—</div>
+      </div>
+      <button class="drill-close" onclick="closeDrill()">✕ 閉じる</button>
+    </div>
+    <div class="drill-g2">
+      <div class="card" style="padding:16px">
+        <div class="kpi-label">販売件数</div>
+        <div class="kpi-val c-accent" id="drill-count" style="font-size:28px">—</div>
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="kpi-label">売上合計</div>
+        <div class="kpi-val c-green" id="drill-revenue" style="font-size:28px">—</div>
+      </div>
+    </div>
+    <div class="g2" style="margin-bottom:0">
+      <div class="card">
+        <div class="card-title">アイテム種別内訳</div>
+        <div id="drill-types" class="bar-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">出荷先国</div>
+        <div id="drill-countries"></div>
+      </div>
+    </div>
+    <div class="drill-items-list">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:8px;color:var(--muted2)">売れた商品リスト</div>
+      <div id="drill-items"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ STATE ══
+const STATE = {
+  files: [],           // {id, name, account, period, rows, hash}
+  accounts: {},        // {accountId: {name, color}}
+  selectedAccounts: [],
+  dateFrom: null,
+  dateTo: null,
+  keywords: {          // category -> [keyword patterns]
+    'アニメ': {
+      'Evangelion': ['evangelion','eva unit','eva '],
+      'Assault Lily': ['assault lily'],
+      'Kantai Collection': ['kantai','kancolle'],
+      'Demon Slayer': ['demon slayer','kimetsu'],
+      'Jujutsu Kaisen': ['jujutsu kaisen','jjk'],
+      'Mob Psycho 100': ['mob psycho'],
+      'Detective Conan': ['detective conan','conan'],
+      'Seraph of the End': ['seraph of'],
+      'Blue Archive': ['blue archive'],
+      'Code Geass': ['code geass'],
+      'Fate/': ['fate stay','fate/'],
+      'D.Gray-man': ['d.gray-man','d gray man'],
+      'Persona': ['persona 3','persona 4','persona 5'],
+      'Macross': ['macross'],
+      'Gushing Over Magical Girls': ['gushing over magical'],
+      'Identity V': ['identity v'],
+      'Taimanin': ['taimanin'],
+      'Resident Evil': ['resident evil','biohazard'],
+      'Street Fighter': ['street fighter'],
+      'One Punch Man': ['one punch man'],
+      'My Hero Academia': ['my hero academia','boku no hero'],
+      'Sailor Moon': ['sailor moon'],
+      'Precure': ['precure','pretty cure'],
+      'Digimon': ['digimon'],
+      'Tokyo Revengers': ['tokyo revengers'],
+      'Fairy Tail': ['fairy tail'],
+      'Overlord': ['overlord'],
+      'Bleach': ['bleach','ichigo'],
+      '9 R.I.P.': ['9 r.i.p.','nine lip'],
+      'Hololive': ['hololive','holo live','calliope'],
+      'Kakegurui': ['kakegurui'],
+      'Call of the Night': ['call of the night','call of night'],
+      'Kemono Friends': ['kemono friends'],
+      'Bungo Stray Dogs': ['bungo stray'],
+      'Yakuza': ['yakuza','gagotoku'],
+      'Hell\'s Paradise': ["hell's paradise",'jigokuraku'],
+      'Assassination Classroom': ['assassination classroom'],
+      'Oshi no Ko': ['oshi no ko'],
+      'Granblue Fantasy': ['granblue'],
+      'Violet Evergarden': ['violet evergarden'],
+      'Osomatsu-san': ['osomatsu'],
+      'Rose of Versailles': ['rose of versailles'],
+      'Utena': ['utena'],
+      'Final Fantasy': ['final fantasy','ff7r','ff7','midgar'],
+      'Dead by Daylight': ['dead by daylight'],
+      'YuruYuri': ['yuruyuri','yuru yuri'],
+      'K-On': ['k-on','k on'],
+      'Lucky Star': ['lucky star'],
+      'Angel Beats': ['angel beats'],
+      'Hatsune Miku': ['hatsune miku','miku'],
+      'Madoka Magica': ['madoka magica','madoka'],
+      'Shaman King': ['shaman king'],
+      'NEEDY STREAMER': ['needy streamer'],
+      'Gnosia': ['gnosia'],
+      'The Dangers in My Heart': ['dangers in my heart'],
+      'Tis Time for Torture': ['tis time for torture','torture, princess'],
+      'Record of Ragnarok': ['record of ragnarok'],
+      'Delicious in Dungeon': ['delicious in dungeon'],
+      'Jojo': ['jojo'],
+      'Love Live': ['love live'],
+      'Gachiakuta': ['gachiakuta'],
+    },
+    'K-POP': {},
+    'ゲーム': {},
+    'その他': {},
+  },
+  selectedKwCat: 'アニメ',
+  selectedKwFranchise: null,
+  currentPage: 'overview',
+  feeDonutChart: null,
+  typeDonutChart: null,
+  countryDonutChart: null,
+};
+
+const COLORS = ['#f0c040','#e8457a','#38e8b0','#6a7fff','#f08030','#34d47a','#00c4e8','#b06aff','#ff6060','#80e060','#e0a0ff','#40c8ff'];
+const ACCOUNT_COLORS = ['#f0c040','#e8457a','#38e8b0','#6a7fff','#f08030','#b06aff'];
+const FLAGS = {US:'🇺🇸',CA:'🇨🇦',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',AU:'🇦🇺',TH:'🇹🇭',JP:'🇯🇵',KR:'🇰🇷',IT:'🇮🇹',ES:'🇪🇸',GR:'🇬🇷',AE:'🇦🇪',SA:'🇸🇦',HK:'🇭🇰',IE:'🇮🇪',RO:'🇷🇴'};
+const COUNTRY_NAMES = {US:'アメリカ',CA:'カナダ',GB:'イギリス',DE:'ドイツ',FR:'フランス',AU:'オーストラリア',TH:'タイ',JP:'日本',KR:'韓国',IT:'イタリア',ES:'スペイン',GR:'ギリシャ',AE:'UAE',SA:'サウジアラビア',HK:'香港',IE:'アイルランド',RO:'ルーマニア'};
+const ITEM_TYPE_KW = ['Acrylic Stand','Acrylic Keychain','Acrylic Block','Keychain','Coaster','T-shirt','Bromide','Poster','Clear File','Charm','Rubber Charm','Metal Charm','Tapestry','Sticker','Badge','Card','Lottery','Art Book','Tote Bag','Desk Mat','Blanket','Towel','Pen','Mouse Pad','Pin','Pick','Figure','Puzzle','Towel','Blanket','Box','Set'];
+
+// ══ CSV PARSING ══
+function parseCSV(text) {
+  const lines = text.split('\n');
+  let headerIdx = -1;
+  let sellerName = '';
+  let startDate = '', endDate = '';
+  for (let i = 0; i < Math.min(15, lines.length); i++) {
+    if (lines[i].includes('Transaction creation date')) { headerIdx = i; }
+    if (lines[i].includes('Seller')) { sellerName = (lines[i].match(/"([^"]+)"[^"]*"([^"]+)"/) || [])[2] || ''; }
+    if (lines[i].includes('Start date')) { startDate = (lines[i].match(/"([^"]+)"[^"]*"([^"]+)"/) || [])[2] || ''; }
+    if (lines[i].includes('End date')) { endDate = (lines[i].match(/"([^"]+)"[^"]*"([^"]+)"/) || [])[2] || ''; }
+  }
+  if (headerIdx < 0) return null;
+
+  const parseRow = (line) => {
+    const res = []; let cur = ''; let inQ = false;
+    for (let c of line) {
+      if (c === '"') inQ = !inQ;
+      else if (c === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    res.push(cur.trim()); return res;
+  };
+
+  const headers = parseRow(lines[headerIdx]);
+  const rows = [];
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const vals = parseRow(lines[i]);
+    if (vals.length < 5) continue;
+    const row = {};
+    headers.forEach((h, j) => { row[h] = vals[j] || '--'; });
+    rows.push(row);
+  }
+  return { sellerName: sellerName || 'unknown', startDate, endDate, rows };
+}
+
+function toF(v) { const s = String(v||'').trim(); if (!s || s==='--') return 0; return parseFloat(s)||0; }
+
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) { h = (Math.imul(31, h) + s.charCodeAt(i)) | 0; }
+  return h.toString(16);
+}
+
+// ══ IDENTIFY ITEM TYPE ══
+function getItemType(title) {
+  const t = title.toLowerCase();
+  for (const kw of ITEM_TYPE_KW) {
+    if (t.includes(kw.toLowerCase())) return kw;
+  }
+  return 'その他';
+}
+
+// ══ IDENTIFY FRANCHISE ══
+function getFranchise(title) {
+  const t = title.toLowerCase();
+  for (const [catName, franchises] of Object.entries(STATE.keywords)) {
+    for (const [franchise, patterns] of Object.entries(franchises)) {
+      for (const pat of patterns) {
+        if (t.includes(pat.toLowerCase())) return { category: catName, franchise };
+      }
+    }
+  }
+  return { category: '未分類', franchise: '未分類' };
+}
+
+// ══ FILE HANDLING ══
+async function handleFiles(fileList) {
+  for (const file of fileList) { await processFile(file); }
+  renderAll();
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+}
+
+async function processFile(file) {
+  const text = await file.text();
+  const hash = hashStr(text.slice(0, 2000));
+
+  // Duplicate check: same hash
+  const dupHash = STATE.files.find(f => f.hash === hash);
+  if (dupHash) {
+    showAlert(`⚠️ 「${file.name}」は既にアップロード済みです（同一ファイル）`, 'warn');
+    return;
+  }
+
+  const parsed = parseCSV(text);
+  if (!parsed) { showAlert(`❌ 「${file.name}」はeBay CSVとして認識できませんでした`, 'err'); return; }
+
+  const { sellerName, startDate, endDate, rows } = parsed;
+
+  // Duplicate check: same account + period
+  const dupPeriod = STATE.files.find(f => f.account === sellerName && f.startDate === startDate && f.endDate === endDate);
+  if (dupPeriod) {
+    showAlert(`⚠️ アカウント「${sellerName}」の同期間データが既に存在します（${startDate} - ${endDate}）`, 'warn');
+  }
+
+  // Register account
+  if (!STATE.accounts[sellerName]) {
+    const color = ACCOUNT_COLORS[Object.keys(STATE.accounts).length % ACCOUNT_COLORS.length];
+    STATE.accounts[sellerName] = { name: sellerName, color };
+    if (!STATE.selectedAccounts.includes(sellerName)) STATE.selectedAccounts.push(sellerName);
+  }
+
+  const id = Date.now() + Math.random();
+  STATE.files.push({ id, name: file.name, account: sellerName, startDate, endDate, rows, hash, isDupPeriod: !!dupPeriod });
+  showAlert(`✅ 「${file.name}」を読み込みました（${sellerName} / ${rows.length}件）`, 'ok');
+}
+
+function removeFile(id) {
+  STATE.files = STATE.files.filter(f => f.id !== id);
+  renderAll();
+}
+
+function showAlert(msg, type) {
+  const area = document.getElementById('alerts-area');
+  const div = document.createElement('div');
+  div.className = `alert alert-${type}`;
+  div.textContent = msg;
+  area.appendChild(div);
+  setTimeout(() => div.remove(), 6000);
+}
+
+// ══ DATA AGGREGATION ══
+function getFilteredRows() {
+  const from = STATE.dateFrom ? new Date(STATE.dateFrom) : null;
+  const to = STATE.dateTo ? new Date(STATE.dateTo) : null;
+
+  const rows = [];
+  for (const f of STATE.files) {
+    if (!STATE.selectedAccounts.includes(f.account)) continue;
+    for (const r of f.rows) {
+      if (from || to) {
+        // Parse "M D, YYYY" or "M DD, YYYY"
+        const ds = (r['Transaction creation date']||'').replace(/\s+/g,' ').trim();
+        if (ds && ds !== '--') {
+          // Format: "2 28, 2026" -> Feb 28 2026
+          const m = ds.match(/(\d+)\s+(\d+),\s+(\d+)/);
+          if (m) {
+            const dt = new Date(parseInt(m[3]), parseInt(m[1])-1, parseInt(m[2]));
+            if (from && dt < from) continue;
+            if (to && dt > to) continue;
+          }
+        }
+      }
+      rows.push({ ...r, _account: f.account });
+    }
+  }
+  return rows;
+}
+
+function calcSales(rows) {
+  let item_subtotal=0, shipping=0, ebay_tax=0, fvf=0, intl=0, store=0, promo=0, insert=0, refund=0, orders=0, refundCount=0;
+  for (const r of rows) {
+    const t = (r['Type']||'').trim();
+    if (t === 'Order') {
+      item_subtotal += toF(r['Item subtotal']);
+      shipping += toF(r['Shipping and handling']);
+      ebay_tax += toF(r['eBay collected tax']);
+      fvf += toF(r['Final Value Fee - fixed']) + toF(r['Final Value Fee - variable']);
+      intl += toF(r['International fee']);
+      if (r['Item title'] && r['Item title'] !== '--' && r['Transaction ID'] && r['Transaction ID'] !== '--') orders++;
+    } else if (t === 'Other fee') {
+      const desc = (r['Description']||'').trim();
+      const amt = toF(r['Net amount']);
+      if (desc.includes('Store')) store += amt;
+      else if (desc.includes('Promoted')) promo += amt;
+      else if (desc.includes('Insertion')) insert += amt;
+      else if (desc.includes('Final Value Fee')) fvf += amt;
+    } else if (t === 'Refund') {
+      refund += toF(r['Net amount']);
+      refundCount++;
+    }
+  }
+  const totalFees = fvf + intl + store + promo + insert;
+  const profit = item_subtotal + shipping + totalFees + refund;
+  const totalRev = item_subtotal + shipping;
+  return { item_subtotal, shipping, ebay_tax, fvf, intl, store, promo, insert, refund, orders, refundCount, totalFees, profit, totalRev };
+}
+
+function calcFranchises(rows) {
+  const map = {};
+  const orderRows = rows.filter(r => (r['Type']||'').trim() === 'Order' && r['Item title'] && r['Item title'] !== '--' && r['Transaction ID'] !== '--');
+  for (const r of orderRows) {
+    const { category, franchise } = getFranchise(r['Item title']);
+    const key = franchise;
+    if (!map[key]) map[key] = { count: 0, revenue: 0, category, items: [], types: {}, countries: {} };
+    map[key].count++;
+    map[key].revenue += toF(r['Item subtotal']);
+    map[key].items.push({ title: r['Item title'], price: toF(r['Item subtotal']), country: r['Ship to country'] });
+    const it = getItemType(r['Item title']);
+    map[key].types[it] = (map[key].types[it]||0) + 1;
+    const c = r['Ship to country'];
+    if (c && c !== '--') map[key].countries[c] = (map[key].countries[c]||0) + 1;
+  }
+  return map;
+}
+
+function calcItemTypes(rows) {
+  const map = {};
+  for (const r of rows) {
+    if ((r['Type']||'').trim() !== 'Order') continue;
+    if (!r['Item title'] || r['Item title'] === '--') continue;
+    const it = getItemType(r['Item title']);
+    map[it] = (map[it]||0) + 1;
+  }
+  return map;
+}
+
+function calcCountries(rows) {
+  const map = {};
+  for (const r of rows) {
+    if ((r['Type']||'').trim() !== 'Order') continue;
+    const c = (r['Ship to country']||'').trim();
+    if (c && c !== '--') map[c] = (map[c]||0) + 1;
+  }
+  return map;
+}
+
+// ══ RENDER ══
+function fmt(n) { return '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2}); }
+function pct(a, b) { if (!b) return '—'; return (a/b*100).toFixed(1)+'%'; }
+
+function renderAll() {
+  renderAccountChips();
+  renderAccBars();
+  renderFileList();
+  const rows = getFilteredRows();
+  renderOverview(rows);
+  renderProducts(rows);
+  renderCountries(rows);
+  renderKwPreview();
+}
+
+function renderAccountChips() {
+  const el = document.getElementById('accountChips');
+  if (Object.keys(STATE.accounts).length === 0) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:8px 0">CSVをアップロードすると<br>アカウントが表示されます</div>';
+    return;
+  }
+  let html = '';
+  // All button
+  const allSel = STATE.selectedAccounts.length === Object.keys(STATE.accounts).length;
+  html += `<div class="chip ${allSel?'selected':''}" onclick="toggleAccount('__ALL__')" style="${allSel?'border-color:var(--accent);color:var(--accent)':''}">
+    <div class="chip-dot" style="${allSel?'background:var(--accent)':''}"></div>
+    <span class="chip-name">全アカウント</span>
+  </div>`;
+  for (const [id, acc] of Object.entries(STATE.accounts)) {
+    const sel = STATE.selectedAccounts.includes(id);
+    html += `<div class="chip ${sel?'selected':''}" onclick="toggleAccount('${id}')" style="${sel?`border-color:${acc.color};color:${acc.color};background:${acc.color}15`:''}">
+      <div class="chip-dot" style="${sel?`background:${acc.color}`:''}"></div>
+      <span class="chip-name">${id}</span>
+      <span class="chip-count">${STATE.files.filter(f=>f.account===id).length}件</span>
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+function toggleAccount(id) {
+  if (id === '__ALL__') {
+    if (STATE.selectedAccounts.length === Object.keys(STATE.accounts).length) {
+      STATE.selectedAccounts = [];
+    } else {
+      STATE.selectedAccounts = Object.keys(STATE.accounts);
+    }
+  } else {
+    const idx = STATE.selectedAccounts.indexOf(id);
+    if (idx >= 0) STATE.selectedAccounts.splice(idx, 1);
+    else STATE.selectedAccounts.push(id);
+  }
+  renderAll();
+}
+
+function renderAccBars() {
+  ['overview','products','countries'].forEach(p => {
+    const el = document.getElementById(`acc-bar-${p}`);
+    if (!el) return;
+    if (STATE.selectedAccounts.length === 0) { el.innerHTML = '<div class="alert alert-warn">アカウントが選択されていません</div>'; return; }
+    el.innerHTML = STATE.selectedAccounts.map(id => {
+      const acc = STATE.accounts[id];
+      if (!acc) return '';
+      return `<div class="acc-pill" style="color:${acc.color};border-color:${acc.color}40;background:${acc.color}12">
+        <span>●</span>${id}
+      </div>`;
+    }).join('');
+  });
+}
+
+function renderOverview(rows) {
+  const s = calcSales(rows);
+  const set = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+
+  set('kpi-subtotal', fmt(s.item_subtotal));
+  set('kpi-shipping', fmt(s.shipping));
+  set('kpi-costs', '-'+fmt(Math.abs(s.totalFees)+Math.abs(s.refund)));
+  set('kpi-profit', fmt(s.profit));
+  set('kpi-margin', `利益率 ${pct(s.profit, s.totalRev)}`);
+  set('big-profit', fmt(s.profit));
+  set('big-margin', pct(s.profit, s.totalRev));
+  set('big-adrate', pct(Math.abs(s.promo), s.totalRev));
+  set('kpi-orders', s.orders.toLocaleString());
+  set('kpi-refunds', s.refundCount.toLocaleString());
+  set('kpi-refund-rate', `返金率 ${pct(s.refundCount, s.orders)}`);
+  set('kpi-avg', s.orders ? fmt(s.totalRev/s.orders) : '—');
+  set('kpi-tax', fmt(s.ebay_tax));
+
+  // Breakdown
+  const bd = document.getElementById('breakdown-content');
+  if (s.totalRev === 0 && s.totalFees === 0) {
+    bd.innerHTML = '<div class="empty" style="padding:24px 0"><div class="empty-icon">📂</div><div class="empty-desc">CSVをアップロードしてください</div></div>';
+  } else {
+    bd.innerHTML = `
+      <div class="brow-cat">売上</div>
+      <div class="brow"><span class="brow-lbl">商品売上</span><span class="brow-val c-green">+${fmt(s.item_subtotal)}</span></div>
+      <div class="brow"><span class="brow-lbl">送料収入</span><span class="brow-val c-green">+${fmt(s.shipping)}</span></div>
+      <div class="brow" style="font-weight:700"><span class="brow-lbl" style="color:var(--text)">売上合計</span><span class="brow-val c-green">+${fmt(s.totalRev)}</span></div>
+      <div class="brow-cat">手数料・コスト</div>
+      <div class="brow"><span class="brow-lbl">Final Value Fee</span><span class="brow-val c-red">${s.fvf<0?'-':''}${fmt(s.fvf)}</span></div>
+      <div class="brow"><span class="brow-lbl">国際手数料</span><span class="brow-val c-red">${s.intl<0?'-':''}${fmt(s.intl)}</span></div>
+      <div class="brow"><span class="brow-lbl">ストア月額費用</span><span class="brow-val c-red">${s.store<0?'-':''}${fmt(s.store)}</span></div>
+      <div class="brow"><span class="brow-lbl">広告費（Promoted）</span><span class="brow-val c-red">${s.promo<0?'-':''}${fmt(s.promo)}</span></div>
+      <div class="brow"><span class="brow-lbl">Insertion Fee</span><span class="brow-val c-red">${s.insert<0?'-':''}${fmt(s.insert)}</span></div>
+      <div class="brow" style="font-weight:700"><span class="brow-lbl" style="color:var(--text)">手数料合計</span><span class="brow-val c-red">-${fmt(Math.abs(s.totalFees))}</span></div>
+      <div class="brow-cat">その他</div>
+      <div class="brow"><span class="brow-lbl">返金（Refund）</span><span class="brow-val c-red">${s.refund<0?'-':''}${fmt(s.refund)}</span></div>
+      <div class="brow"><span class="brow-lbl">eBay税収（参考）</span><span class="brow-val" style="color:var(--muted2)">${fmt(s.ebay_tax)}</span></div>
+      <div style="margin-top:14px;padding-top:14px;border-top:2px solid var(--accent);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px">純利益</span>
+        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--green)">+${fmt(s.profit)}</span>
+      </div>`;
+  }
+
+  // Fee donut
+  if (STATE.feeDonutChart) STATE.feeDonutChart.destroy();
+  const ctx = document.getElementById('feeDonut');
+  if (ctx) {
+    STATE.feeDonutChart = new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels:['FVF手数料','広告費','ストア費','国際手数料','返金'],
+        datasets:[{
+          data:[Math.abs(s.fvf),Math.abs(s.promo),Math.abs(s.store),Math.abs(s.intl),Math.abs(s.refund)],
+          backgroundColor:COLORS.slice(0,5).map(c=>c+'cc'),
+          borderColor:COLORS.slice(0,5),borderWidth:1,
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+        plugins:{legend:{position:'bottom',labels:{color:'#5a6280',font:{family:'DM Mono',size:9},padding:8,boxWidth:10}}}}
+    });
+  }
+}
+
+function renderProducts(rows) {
+  if (!rows) rows = getFilteredRows();
+  const mode = document.getElementById('cat-type-sel')?.value || 'franchise';
+  const franchises = calcFranchises(rows);
+  const itemTypes = calcItemTypes(rows);
+
+  // BAR LIST
+  const barEl = document.getElementById('cat-bar-list');
+  if (!barEl) return;
+
+  if (mode === 'franchise') {
+    const entries = Object.entries(franchises).sort((a,b)=>b[1].count-a[1].count).slice(0,20);
+    const maxV = entries[0]?.[1]?.count || 1;
+    barEl.innerHTML = entries.map(([name, d], i) => `
+      <div class="bar-item">
+        <div class="bar-meta" onclick="openDrill('${name.replace(/'/g,"\\'")}')">
+          <span class="bar-name" title="${name}" style="color:${COLORS[i%COLORS.length]}">${name}</span>
+          <span class="bar-cnt">${d.count}件 <span style="color:var(--muted);font-size:9px">▶ 詳細</span></span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${d.count/maxV*100}%;background:${COLORS[i%COLORS.length]}"></div></div>
+      </div>`).join('') || '<div class="empty" style="padding:24px 0"><div class="empty-desc">データがありません</div></div>';
+
+    // Stats
+    const allOrderItems = rows.filter(r => (r['Type']||'').trim()==='Order' && r['Item title'] && r['Item title']!=='--' && r['Transaction ID']!=='--');
+    const matched = allOrderItems.filter(r => getFranchise(r['Item title']).franchise !== '未分類').length;
+    const s = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+    s('stat-matched', matched);
+    s('stat-unmatched', allOrderItems.length - matched);
+    s('stat-total', allOrderItems.length);
+  } else {
+    const entries = Object.entries(itemTypes).sort((a,b)=>b[1]-a[1]);
+    const maxV = entries[0]?.[1] || 1;
+    barEl.innerHTML = entries.map(([name, cnt], i) => `
+      <div class="bar-item">
+        <div class="bar-meta">
+          <span class="bar-name" style="color:${COLORS[i%COLORS.length]}">${name}</span>
+          <span class="bar-cnt">${cnt}件</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${cnt/maxV*100}%;background:${COLORS[i%COLORS.length]}"></div></div>
+      </div>`).join('') || '<div class="empty" style="padding:24px 0"><div class="empty-desc">データがありません</div></div>';
+  }
+
+  // Type donut
+  if (STATE.typeDonutChart) STATE.typeDonutChart.destroy();
+  const tc = document.getElementById('typeDonut');
+  if (tc) {
+    const top = Object.entries(itemTypes).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    STATE.typeDonutChart = new Chart(tc, {
+      type:'doughnut',
+      data:{
+        labels:top.map(([k])=>k),
+        datasets:[{data:top.map(([,v])=>v),backgroundColor:COLORS.slice(0,8).map(c=>c+'cc'),borderColor:COLORS.slice(0,8),borderWidth:1}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{legend:{position:'bottom',labels:{color:'#5a6280',font:{family:'DM Mono',size:9},padding:6,boxWidth:10}}}}
+    });
+  }
+}
+
+function renderCountries(rows) {
+  if (!rows) rows = getFilteredRows();
+  const countries = calcCountries(rows);
+  const total = Object.values(countries).reduce((s,v)=>s+v,0);
+  const entries = Object.entries(countries).sort((a,b)=>b[1]-a[1]);
+
+  // List
+  const el = document.getElementById('country-list-el');
+  if (el) {
+    el.innerHTML = entries.map(([code, cnt], i) => {
+      const flag = FLAGS[code]||'🌍';
+      const name = COUNTRY_NAMES[code]||code;
+      const p = total ? cnt/total*100 : 0;
+      return `<div class="crow">
+        <span class="cflag">${flag}</span>
+        <span class="cname">${name}</span>
+        <div class="ctrack"><div class="cfill" style="width:${p}%;background:${COLORS[i%COLORS.length]}"></div></div>
+        <span class="cpct">${p.toFixed(1)}%</span>
+        <span class="ccnt">${cnt}件</span>
+      </div>`;
+    }).join('') || '<div class="empty" style="padding:24px 0"><div class="empty-desc">データなし</div></div>';
+  }
+
+  // Stats
+  const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  if (entries.length > 0) {
+    const top = entries[0];
+    set('top-country', (FLAGS[top[0]]||'')+ ' '+(COUNTRY_NAMES[top[0]]||top[0]));
+    set('top-country-pct', pct(top[1],total)+' のシェア');
+  }
+  const engCodes = ['US','CA','GB','AU'];
+  const engTotal = engCodes.reduce((s,c)=>s+(countries[c]||0),0);
+  set('eng-share', pct(engTotal, total));
+  set('country-count', entries.length+'カ国');
+
+  // Donut
+  if (STATE.countryDonutChart) STATE.countryDonutChart.destroy();
+  const cc = document.getElementById('countryDonut');
+  if (cc) {
+    const top8 = entries.slice(0,7);
+    const rest = entries.slice(7).reduce((s,[,v])=>s+v,0);
+    const labels = top8.map(([c])=>(FLAGS[c]||'🌍')+' '+(COUNTRY_NAMES[c]||c));
+    const data = top8.map(([,v])=>v);
+    if (rest>0) { labels.push('その他'); data.push(rest); }
+    STATE.countryDonutChart = new Chart(cc, {
+      type:'doughnut',
+      data:{labels,datasets:[{data,backgroundColor:COLORS.slice(0,labels.length).map(c=>c+'cc'),borderColor:COLORS.slice(0,labels.length),borderWidth:1}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{legend:{position:'bottom',labels:{color:'#5a6280',font:{family:'DM Mono',size:9},padding:6,boxWidth:10}}}}
+    });
+  }
+}
+
+// ══ DRILLDOWN ══
+function openDrill(franchiseName) {
+  const rows = getFilteredRows();
+  const franchises = calcFranchises(rows);
+  const d = franchises[franchiseName];
+  if (!d) return;
+
+  document.getElementById('drill-title').textContent = franchiseName;
+  document.getElementById('drill-sub').textContent = `カテゴリ: ${d.category}`;
+  document.getElementById('drill-count').textContent = d.count+'件';
+  document.getElementById('drill-revenue').textContent = fmt(d.revenue);
+
+  // Types
+  const typeEl = document.getElementById('drill-types');
+  const typeEntries = Object.entries(d.types).sort((a,b)=>b[1]-a[1]);
+  const maxT = typeEntries[0]?.[1]||1;
+  typeEl.innerHTML = typeEntries.map(([name,cnt],i)=>`
+    <div class="bar-item" style="margin-bottom:8px">
+      <div class="bar-meta"><span class="bar-name" style="color:${COLORS[i%COLORS.length]}">${name}</span><span class="bar-cnt">${cnt}件</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${cnt/maxT*100}%;background:${COLORS[i%COLORS.length]}"></div></div>
+    </div>`).join('');
+
+  // Countries
+  const ctryEl = document.getElementById('drill-countries');
+  const ctryEntries = Object.entries(d.countries).sort((a,b)=>b[1]-a[1]);
+  const totalC = ctryEntries.reduce((s,[,v])=>s+v,0);
+  ctryEl.innerHTML = ctryEntries.map(([code,cnt],i)=>`
+    <div class="crow" style="margin-bottom:7px">
+      <span class="cflag" style="font-size:14px;width:20px">${FLAGS[code]||'🌍'}</span>
+      <span class="cname" style="width:80px;font-size:11px">${COUNTRY_NAMES[code]||code}</span>
+      <div class="ctrack" style="height:5px"><div class="cfill" style="width:${totalC?cnt/totalC*100:0}%;background:${COLORS[i%COLORS.length]}"></div></div>
+      <span class="cpct" style="font-size:10px">${totalC?pct(cnt,totalC):'—'}</span>
+    </div>`).join('');
+
+  // Items list
+  const itemsEl = document.getElementById('drill-items');
+  itemsEl.innerHTML = d.items.slice(0,20).map(item=>`
+    <div class="drill-item">
+      <div style="flex:1">
+        <div class="drill-item-title">${item.title}</div>
+        <div class="drill-item-meta">${FLAGS[item.country]||'🌍'} ${COUNTRY_NAMES[item.country]||item.country||'—'}</div>
+      </div>
+      <div class="drill-item-price">${fmt(item.price)}</div>
+    </div>`).join('');
+  if (d.items.length > 20) itemsEl.innerHTML += `<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px">他 ${d.items.length-20}件</div>`;
+
+  document.getElementById('drilldown').classList.add('open');
+}
+function closeDrill() { document.getElementById('drilldown').classList.remove('open'); }
+
+// ══ FILE LIST ══
+function renderFileList() {
+  const el = document.getElementById('file-list-el');
+  const badge = document.getElementById('file-count-badge');
+  if (badge) badge.textContent = STATE.files.length+'件';
+
+  if (STATE.files.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📂</div><div class="empty-title">まだファイルがありません</div><div class="empty-desc">eBay取引レポートCSVをアップロードしてください</div></div>';
+    return;
+  }
+  el.innerHTML = STATE.files.map(f => {
+    const acc = STATE.accounts[f.account];
+    const badge = f.isDupPeriod
+      ? '<span class="file-badge warn">⚠ 期間重複</span>'
+      : '<span class="file-badge ok">✓ 正常</span>';
+    return `<div class="file-item">
+      <span class="file-icon">📄</span>
+      <div class="file-info">
+        <div class="file-name">${f.name}</div>
+        <div class="file-meta">${f.startDate} 〜 ${f.endDate} / ${f.rows.length}件のレコード</div>
+        <div class="file-account" style="color:${acc?.color||'var(--accent)'}">● ${f.account}</div>
+      </div>
+      ${badge}
+      <button class="file-del" onclick="removeFile(${f.id})" title="削除">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ══ KEYWORD EDITOR ══
+function renderKwEditor() {
+  const catList = document.getElementById('kw-cat-list');
+  catList.innerHTML = Object.keys(STATE.keywords).map(cat => `
+    <div class="kw-cat ${cat===STATE.selectedKwCat?'active':''}" onclick="selectKwCat('${cat}')">
+      ${cat}
+      <span style="font-size:9px;color:var(--muted)">${Object.keys(STATE.keywords[cat]).length}</span>
+    </div>`).join('');
+
+  if (!STATE.selectedKwCat) return;
+  const franchises = STATE.keywords[STATE.selectedKwCat];
+  document.getElementById('kw-selected-label').textContent = `「${STATE.selectedKwCat}」のフランチャイズ一覧`;
+  document.getElementById('kw-add-row').style.display = 'flex';
+
+  const tagsEl = document.getElementById('kw-tags-area');
+  tagsEl.innerHTML = Object.keys(franchises).map(f => `
+    <div class="kw-tag">
+      ${f}
+      <button class="kw-tag-del" onclick="removeFranchise('${STATE.selectedKwCat}','${f.replace(/'/g,"\\'")}')">×</button>
+    </div>`).join('') || '<span style="font-size:11px;color:var(--muted)">フランチャイズがありません。下に追加してください。</span>';
+}
+
+function selectKwCat(cat) {
+  STATE.selectedKwCat = cat;
+  renderKwEditor();
+}
+
+function addCategory() {
+  const input = document.getElementById('new-cat-input');
+  const name = input.value.trim();
+  if (!name || STATE.keywords[name]) return;
+  STATE.keywords[name] = {};
+  input.value = '';
+  STATE.selectedKwCat = name;
+  renderKwEditor();
+}
+
+function addKeyword() {
+  const input = document.getElementById('new-kw-input');
+  const name = input.value.trim();
+  if (!name || !STATE.selectedKwCat) return;
+  if (!STATE.keywords[STATE.selectedKwCat][name]) {
+    STATE.keywords[STATE.selectedKwCat][name] = [name.toLowerCase()];
+  }
+  input.value = '';
+  renderKwEditor();
+  renderAll();
+}
+
+function removeFranchise(cat, name) {
+  delete STATE.keywords[cat][name];
+  renderKwEditor();
+  renderAll();
+}
+
+function renderKwPreview() {
+  const rows = getFilteredRows();
+  const orderItems = rows.filter(r => (r['Type']||'').trim()==='Order' && r['Item title'] && r['Item title']!=='--' && r['Transaction ID']!=='--');
+  const unmatched = orderItems.filter(r => getFranchise(r['Item title']).franchise === '未分類').slice(0,20);
+  const el = document.getElementById('kw-preview');
+  if (!el) return;
+  if (unmatched.length === 0) {
+    el.innerHTML = '<div class="alert alert-ok">全商品が識別済みです 🎉</div>';
+    return;
+  }
+  el.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">未分類の商品（${unmatched.length}件表示）—キーワードを追加してください</div>`
+    + unmatched.map(r => `<div style="font-size:11px;padding:7px 0;border-bottom:1px solid var(--border);color:var(--muted2)">${r['Item title']}</div>`).join('');
+}
+
+// ══ NAVIGATION ══
+function showPage(page) {
+  STATE.currentPage = page;
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const pageEl = document.getElementById(`page-${page}`);
+  if (pageEl) pageEl.classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  const pageNames = { overview:'売上・利益', products:'商品傾向', countries:'国別分析', files:'CSVファイル管理', keywords:'キーワード設定' };
+  navItems.forEach((el, i) => {
+    const pages = ['overview','products','countries','files','keywords'];
+    if (pages[i] === page) el.classList.add('active');
+  });
+  const titleEl = document.getElementById('topbarTitle');
+  if (titleEl) titleEl.textContent = pageNames[page]||page;
+
+  if (page === 'keywords') renderKwEditor();
+}
+
+function applyFilters() {
+  STATE.dateFrom = document.getElementById('dateFrom').value || null;
+  STATE.dateTo = document.getElementById('dateTo').value || null;
+  const rows = getFilteredRows();
+  renderOverview(rows);
+  renderProducts(rows);
+  renderCountries(rows);
+  renderKwPreview();
+}
+
+function clearDates() {
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  STATE.dateFrom = null;
+  STATE.dateTo = null;
+  applyFilters();
+}
+
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded', function() {
+  const zone = document.getElementById('upload-zone');
+  const input = document.getElementById('fileInput');
+  const btn = document.getElementById('upload-btn');
+
+  // Click on zone or button → open file picker
+  zone.addEventListener('click', function() { input.click(); });
+  btn.addEventListener('click', function(e) { e.stopPropagation(); input.click(); });
+
+  // File selected via picker
+  input.addEventListener('change', function() {
+    if (this.files && this.files.length > 0) {
+      handleFiles(this.files);
+      this.value = ''; // reset so same file can be re-selected
+    }
+  });
+
+  // Drag and drop
+  zone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    zone.classList.add('drag');
+  });
+  zone.addEventListener('dragleave', function() {
+    zone.classList.remove('drag');
+  });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('drag');
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  });
+
+  renderAll();
+});
+</script>
+</body>
+</html>
