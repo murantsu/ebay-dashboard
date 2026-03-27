@@ -3,1365 +3,1274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>eBay Multi-Account Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<title>eBay Pro Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg: #080a0f;
-  --surface: #0e1018;
-  --surface2: #161a26;
-  --surface3: #1d2233;
-  --border: #252a3a;
-  --border2: #2f3650;
-  --accent: #f0c040;
-  --accent2: #e8457a;
-  --accent3: #38e8b0;
-  --accent4: #6a7fff;
-  --text: #dde1ef;
-  --muted: #5a6280;
-  --muted2: #8a92b0;
-  --green: #34d47a;
-  --red: #f05060;
-  --orange: #f08030;
-}
+:root{--bg:#080a0f;--s1:#0e1018;--s2:#161a26;--s3:#1d2233;--bd:#252a3a;--bd2:#2f3650;--acc:#f0c040;--acc2:#e8457a;--acc3:#38e8b0;--acc4:#6a7fff;--tx:#dde1ef;--mu:#5a6280;--mu2:#8a92b0;--gr:#34d47a;--rd:#f05060;--or:#f08030}
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden}
-
-/* ── SIDEBAR ── */
-#sidebar{
-  position:fixed;top:0;left:0;width:220px;height:100vh;
-  background:var(--surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;z-index:100;
-  transition:transform .3s ease;
-}
-.logo-area{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-0.5px;color:var(--text)}
-.logo span{color:var(--accent)}
-.logo-sub{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
-
-.nav-section{padding:16px 12px 0;flex:1;overflow-y:auto}
-.nav-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:0 8px;margin-bottom:8px}
-.nav-item{
-  display:flex;align-items:center;gap:10px;padding:9px 10px;
-  border-radius:8px;cursor:pointer;font-size:12px;color:var(--muted2);
-  transition:all .15s;margin-bottom:2px;
-}
-.nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--surface3);color:var(--accent);border-left:2px solid var(--accent)}
-.nav-icon{font-size:14px;width:18px;text-align:center}
-
-.account-chips{padding:12px;border-top:1px solid var(--border)}
-.account-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.chip{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:7px 10px;border-radius:7px;border:1px solid var(--border);
-  font-size:11px;cursor:pointer;margin-bottom:4px;
-  transition:all .15s;user-select:none;
-}
-.chip:hover{border-color:var(--border2)}
-.chip.selected{border-color:var(--accent);background:#f0c04010;color:var(--accent)}
-.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
-.chip.selected .chip-dot{background:var(--accent)}
-.chip-name{flex:1;margin-left:8px}
-.chip-count{font-size:10px;color:var(--muted)}
-
-/* ── MAIN ── */
-#main{margin-left:220px;min-height:100vh;padding:0}
-
-/* ── TOPBAR ── */
-#topbar{
-  position:sticky;top:0;z-index:90;
-  background:var(--bg)ee;backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border);
-  padding:12px 28px;display:flex;align-items:center;gap:16px;
-}
-.topbar-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;flex:1}
-.filter-group{display:flex;align-items:center;gap:8px}
-.filter-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
-select,input[type=date]{
-  background:var(--surface2);border:1px solid var(--border);
-  color:var(--text);border-radius:6px;padding:5px 10px;
-  font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;
-  outline:none;
-}
-select:hover,input[type=date]:hover{border-color:var(--border2)}
-.btn{
-  padding:6px 14px;border-radius:6px;border:none;
-  font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;
-  transition:all .15s;
-}
-.btn-primary{background:var(--accent);color:#000;font-weight:700}
-.btn-primary:hover{background:#f8d060}
-.btn-ghost{background:var(--surface2);color:var(--muted2);border:1px solid var(--border)}
-.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
-
-/* ── CONTENT ── */
-.page{display:none;padding:28px}
-.page.active{display:block}
-
-/* ── SECTION HEADER ── */
-.sh{
-  display:flex;align-items:center;gap:12px;
-  margin-bottom:20px;
-}
-.sh-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2)}
-.sh-line{flex:1;height:1px;background:var(--border)}
-.sh-badge{font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--muted)}
-
-/* ── GRID ── */
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
-.g21{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:28px}
-.g12{display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:28px}
-
-/* ── CARDS ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
-.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-
-/* ── KPI ── */
-.kpi-label{font-size:10px;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px}
-.kpi-val{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;letter-spacing:0;line-height:1}
-.kpi-sub{font-size:10px;color:var(--muted);margin-top:5px}
-.kpi-delta{font-size:11px;margin-top:6px}
-.kpi-delta.up{color:var(--green)}
-.kpi-delta.dn{color:var(--red)}
-.c-accent{color:var(--accent)}
-.c-green{color:var(--green)}
-.c-red{color:var(--red)}
-.c-accent4{color:var(--accent4)}
-.c-accent2{color:var(--accent2)}
-
-/* ── BREAKDOWN ── */
-.brow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
-.brow:last-child{border-bottom:none}
-.brow-lbl{color:var(--muted2)}
-.brow-val{font-weight:500}
-.brow-cat{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);padding:10px 0 3px}
-
-/* ── BAR LIST ── */
-.bar-list{display:flex;flex-direction:column;gap:9px}
-.bar-item{}
-.bar-meta{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;cursor:pointer}
-.bar-name{max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .15s}
-.bar-name:hover{color:var(--accent)}
-.bar-cnt{color:var(--muted)}
-.bar-track{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
-.bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.16,1,.3,1)}
-
-/* ── COUNTRY ROW ── */
-.crow{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-.cflag{font-size:18px;width:24px}
-.cname{font-size:12px;width:110px;color:var(--text)}
-.ctrack{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
-.cfill{height:100%;border-radius:4px;transition:width .8s ease}
-.cpct{font-size:11px;color:var(--muted);width:38px;text-align:right}
-.ccnt{font-size:10px;color:var(--muted);width:32px;text-align:right}
-
-/* ── CHART WRAP ── */
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--tx);font-family:'DM Mono',monospace;display:flex}
+/* SIDEBAR */
+#sb{width:210px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.logo-a{padding:18px 16px 14px;border-bottom:1px solid var(--bd)}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.5px}.logo span{color:var(--acc)}
+.logo-s{font-size:9px;color:var(--mu);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.nav-s{padding:12px 10px 0;flex:1;overflow-y:auto}
+.nav-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mu);padding:0 6px;margin-bottom:6px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 8px;border-radius:7px;cursor:pointer;font-size:11px;color:var(--mu2);transition:all .15s;margin-bottom:1px;border-left:2px solid transparent}
+.ni:hover{background:var(--s2);color:var(--tx)}
+.ni.act{background:var(--s3);color:var(--acc);border-left-color:var(--acc)}
+.acc-a{padding:10px 12px;border-top:1px solid var(--bd)}
+.acc-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px}
+.chip{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:6px;border:1px solid var(--bd);font-size:10px;color:var(--mu2);cursor:pointer;margin-bottom:3px;transition:all .15s}
+.chip:hover{border-color:var(--bd2)}.chip.sel{font-weight:500}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--mu);flex-shrink:0}
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
+#topbar{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--bd);background:var(--s1);flex-shrink:0}
+.tb-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;flex:1}
+.fl{font-size:10px;color:var(--mu);letter-spacing:.5px}
+input[type=date]{background:var(--s2);border:1px solid var(--bd);color:var(--tx);border-radius:5px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:10px;outline:none}
+input[type=date]:hover{border-color:var(--bd2)}
+.btn{padding:5px 12px;border-radius:5px;border:none;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .15s}
+.btn-p{background:var(--acc);color:#000;font-weight:700}.btn-p:hover{background:#f8d060}
+.btn-g{background:var(--s2);color:var(--mu2);border:1px solid var(--bd)}.btn-g:hover{color:var(--tx);border-color:var(--bd2)}
+/* PAGES */
+#pages{flex:1;overflow-y:auto;overflow-x:hidden}
+.page{display:none;padding:16px 20px}
+.page.act{display:block}
+/* GRID */
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:12px}
+.g31{display:grid;grid-template-columns:3fr 1fr;gap:10px;margin-bottom:12px}
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px}
+.ct{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--tx);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+/* KPI */
+.kl{font-size:9px;color:var(--mu);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.kv{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;letter-spacing:0;line-height:1}
+.ks{font-size:9px;color:var(--mu);margin-top:4px}
+.c-acc{color:var(--acc)}.c-acc4{color:var(--acc4)}.c-gr{color:var(--gr)}.c-rd{color:var(--rd)}.c-acc2{color:var(--acc2)}
+/* BREAKDOWN */
+.br{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd);font-size:11px}
+.br:last-child{border-bottom:none}
+.bl{color:var(--mu2)}.bv{font-weight:500}
+.bc{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);padding:8px 0 2px}
+/* BAR */
+.bi{margin-bottom:7px}
+.bm{display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px}
+.bn{max-width:78%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;transition:color .15s}
+.bn:hover{color:var(--acc)}
+.bct{color:var(--mu);font-size:10px}
+.bt{height:4px;background:var(--s2);border-radius:2px;overflow:hidden}
+.bf{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.16,1,.3,1)}
+/* COUNTRY */
+.cr{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:11px}
+.cf{width:20px;font-size:13px}.cn{width:85px;color:var(--tx)}.ct2{flex:1;height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
+.cfi{height:100%;border-radius:3px}.cp{width:34px;text-align:right;font-size:10px;color:var(--mu)}.cc{width:26px;text-align:right;font-size:10px;color:var(--mu)}
+/* CHART */
 .ch{position:relative}
-.ch-260{height:260px}
-.ch-220{height:220px}
-.ch-200{height:200px}
-
-/* ── UPLOAD ZONE ── */
-#upload-zone{
-  border:2px dashed var(--border2);border-radius:14px;
-  padding:48px 32px;text-align:center;cursor:pointer;
-  transition:all .2s;background:var(--surface);
-  margin-bottom:24px;
-}
-#upload-zone:hover,#upload-zone.drag{border-color:var(--accent);background:#f0c04008}
-#upload-zone h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px}
-#upload-zone p{font-size:12px;color:var(--muted);margin-bottom:16px}
-#fileInput{display:none}
-
-/* ── FILE LIST ── */
-.file-item{
-  display:flex;align-items:center;gap:12px;
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:10px;padding:12px 16px;margin-bottom:8px;
-  animation:fadeUp .3s ease;
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.file-icon{font-size:20px}
-.file-info{flex:1}
-.file-name{font-size:12px;color:var(--text);font-weight:500}
-.file-meta{font-size:10px;color:var(--muted);margin-top:3px}
-.file-account{font-size:10px;color:var(--accent);margin-top:2px}
-.file-badge{
-  padding:3px 10px;border-radius:5px;font-size:10px;letter-spacing:.5px;
-  border:1px solid;
-}
-.file-badge.ok{color:var(--green);border-color:var(--green)30;background:var(--green)10}
-.file-badge.dup{color:var(--red);border-color:var(--red)30;background:var(--red)10}
-.file-badge.warn{color:var(--orange);border-color:var(--orange)30;background:var(--orange)10}
-.file-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;transition:color .15s}
-.file-del:hover{color:var(--red)}
-
-/* ── KEYWORD EDITOR ── */
-.kw-editor{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
-.kw-editor h3{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px}
-.kw-editor p{font-size:11px;color:var(--muted);margin-bottom:16px}
-.kw-cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-.kw-cat{
-  display:flex;align-items:center;gap:6px;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;
-  transition:all .15s;
-}
-.kw-cat:hover{border-color:var(--border2)}
-.kw-cat.active{border-color:var(--accent);color:var(--accent);background:#f0c04010}
-.kw-tags{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;margin-bottom:12px}
-.kw-tag{
-  display:flex;align-items:center;gap:5px;
-  background:var(--surface3);border:1px solid var(--border2);
-  border-radius:20px;padding:3px 10px 3px 12px;font-size:11px;
-}
-.kw-tag-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0;margin-left:2px}
-.kw-tag-del:hover{color:var(--red)}
-.kw-add-row{display:flex;gap:8px}
-.kw-input{
-  flex:1;background:var(--surface2);border:1px solid var(--border);
-  border-radius:7px;padding:7px 12px;font-family:'DM Mono',monospace;
-  font-size:11px;color:var(--text);outline:none;
-}
-.kw-input:focus{border-color:var(--accent)}
-
-/* ── MODAL/DRILLDOWN ── */
-#drilldown{
-  display:none;position:fixed;inset:0;z-index:200;
-  background:#000000b0;backdrop-filter:blur(6px);
-  align-items:center;justify-content:center;
-}
-#drilldown.open{display:flex}
-.drill-panel{
-  background:var(--surface);border:1px solid var(--border2);
-  border-radius:16px;width:720px;max-width:95vw;max-height:85vh;
-  overflow-y:auto;padding:28px;animation:popIn .25s cubic-bezier(.16,1,.3,1);
-}
-@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
-.drill-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
-.drill-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px}
-.drill-sub{font-size:11px;color:var(--muted);margin-top:4px}
-.drill-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--muted2);cursor:pointer;font-size:13px;font-family:'DM Mono',monospace}
-.drill-close:hover{color:var(--text)}
-.drill-g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-.drill-items-list{margin-top:16px}
-.drill-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:11px}
-.drill-item:last-child{border-bottom:none}
-.drill-item-title{flex:1;color:var(--text);line-height:1.4}
-.drill-item-meta{color:var(--muted);font-size:10px;margin-top:2px}
-.drill-item-price{color:var(--accent);font-weight:500;white-space:nowrap}
-
-/* ── ALERTS ── */
-.alert{
-  border-radius:8px;padding:10px 14px;font-size:11px;
-  margin-bottom:8px;display:flex;align-items:center;gap:8px;
-}
-.alert-warn{background:#f0803015;border:1px solid #f0803040;color:#f08030}
-.alert-err{background:#f0506015;border:1px solid #f0506040;color:#f05060}
-.alert-ok{background:#34d47a15;border:1px solid #34d47a40;color:#34d47a}
-
-/* ── ACCOUNT INDICATOR ── */
-.acc-bar{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
-.acc-pill{
-  padding:4px 12px;border-radius:20px;font-size:10px;letter-spacing:.5px;
-  border:1px solid;display:flex;align-items:center;gap:5px;
-}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--surface)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-
-/* ── EMPTY STATE ── */
-.empty{text-align:center;padding:48px 32px;color:var(--muted)}
-.empty-icon{font-size:40px;margin-bottom:12px}
-.empty-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--muted2);margin-bottom:6px}
-.empty-desc{font-size:11px;line-height:1.6}
-
-@media(max-width:900px){
-  #sidebar{transform:translateX(-220px)}
-  #main{margin-left:0}
-  .g4,.g3{grid-template-columns:repeat(2,1fr)}
-  .g2,.g21,.g12{grid-template-columns:1fr}
-}
+/* UPLOAD */
+#upzone{border:2px dashed var(--bd2);border-radius:12px;padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--s1);margin-bottom:16px}
+#upzone:hover,#upzone.drag{border-color:var(--acc);background:#f0c04008}
+#upzone h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:6px}
+#upzone p{font-size:11px;color:var(--mu);margin-bottom:14px;line-height:1.6}
+/* FILE LIST */
+.fi{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;margin-bottom:6px;animation:fu .3s ease}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fn{font-size:11px;color:var(--tx);font-weight:500}
+.fm{font-size:9px;color:var(--mu);margin-top:2px}
+.fa{font-size:9px;margin-top:2px}
+.fbg{padding:2px 8px;border-radius:4px;font-size:9px;border:1px solid}
+.b-ok{color:var(--gr);border-color:#34d47a30;background:#34d47a10}
+.b-wn{color:var(--or);border-color:#f0803030;background:#f0803010}
+.fdl{background:none;border:none;color:var(--mu);cursor:pointer;font-size:14px;padding:2px 6px}.fdl:hover{color:var(--rd)}
+/* ALERTS */
+.al{padding:8px 12px;border-radius:7px;font-size:11px;margin-bottom:6px;border:1px solid;animation:fu .3s ease}
+.a-ok{background:#34d47a12;border-color:#34d47a40;color:var(--gr)}
+.a-wn{background:#f0803012;border-color:#f0803040;color:var(--or)}
+.a-er{background:#f0506012;border-color:#f0506040;color:var(--rd)}
+/* KW */
+.kwtag{display:inline-flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--bd2);border-radius:20px;padding:3px 10px 3px 12px;font-size:10px;margin:2px;color:var(--tx)}
+.kwd{background:none;border:none;color:var(--mu);cursor:pointer;font-size:12px;padding:0;line-height:1}.kwd:hover{color:var(--rd)}
+.kwcat{padding:5px 10px;border-radius:6px;border:1px solid var(--bd);font-size:10px;cursor:pointer;display:inline-block;margin:2px;color:var(--mu2);transition:all .15s}
+.kwcat:hover{border-color:var(--bd2);color:var(--tx)}.kwcat.sel{border-color:var(--acc);background:#f0c04010;color:var(--acc)}
+/* MODAL */
+#drill{display:none;position:fixed;inset:0;z-index:200;background:#000000b0;backdrop-filter:blur(6px);align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+#drill.open{display:flex}
+.dp{background:var(--s1);border:1px solid var(--bd2);border-radius:14px;width:700px;max-width:95vw;padding:24px;animation:pi .2s cubic-bezier(.16,1,.3,1)}
+@keyframes pi{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.dh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.dt{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.5px}
+.ds{font-size:10px;color:var(--mu);margin-top:3px}
+.dc{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:5px 12px;color:var(--mu2);cursor:pointer;font-size:11px;font-family:'DM Mono',monospace}.dc:hover{color:var(--tx)}
+/* MANUAL ASSIGN */
+.ua-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:11px}
+.ua-title{flex:1;color:var(--mu2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ua-sel{background:var(--s2);border:1px solid var(--bd);color:var(--tx);border-radius:5px;padding:3px 8px;font-family:'DM Mono',monospace;font-size:10px;outline:none;cursor:pointer}
+.ua-sel:hover{border-color:var(--bd2)}
+.ua-btn{padding:3px 10px;background:var(--acc);color:#000;border:none;border-radius:4px;font-size:10px;cursor:pointer;font-weight:700;font-family:'DM Mono',monospace}
+/* TABS */
+.tabs{display:flex;gap:3px;margin-bottom:10px}
+.tab{padding:4px 12px;border-radius:5px;border:1px solid var(--bd);font-size:10px;cursor:pointer;color:var(--mu2);transition:all .15s}
+.tab:hover{border-color:var(--bd2);color:var(--tx)}.tab.sel{border-color:var(--acc);background:#f0c04012;color:var(--acc)}
+/* EMPTY */
+.emp{text-align:center;padding:28px;color:var(--mu)}
+.ei{font-size:26px;margin-bottom:8px}.et{font-size:12px;font-weight:500;color:var(--mu2);margin-bottom:4px}.ed{font-size:10px;line-height:1.6}
+/* ACC BAR */
+.accbar{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.apill{padding:3px 10px;border-radius:20px;font-size:9px;letter-spacing:.5px;border:1px solid;display:flex;align-items:center;gap:4px}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--s1)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+/* SECTION HEADER */
+.sh{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sht{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mu2)}
+.shl{flex:1;height:1px;background:var(--bd)}
+.shb{font-size:9px;background:var(--s2);border:1px solid var(--bd);border-radius:3px;padding:1px 7px;color:var(--mu)}
+select{background:var(--s2);border:1px solid var(--bd);color:var(--tx);border-radius:5px;padding:3px 8px;font-family:'DM Mono',monospace;font-size:10px;outline:none;cursor:pointer}
+select:hover{border-color:var(--bd2)}
+input[type=text]{background:var(--s2);border:1px solid var(--bd);color:var(--tx);border-radius:5px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none}
+input[type=text]:focus{border-color:var(--acc)}
+/* PROFIT BOX */
+.pbox{background:linear-gradient(135deg,#0f1f14,#0a140f);border:1px solid #1a3a20;border-radius:10px;padding:16px;text-align:center}
 </style>
 </head>
 <body>
 
-<!-- ══ SIDEBAR ══ -->
-<div id="sidebar">
-  <div class="logo-area">
+<!-- SIDEBAR -->
+<div id="sb">
+  <div class="logo-a">
     <div class="logo">eBay <span>Pro</span></div>
-    <div class="logo-sub">Multi-Account Dashboard</div>
+    <div class="logo-s">Multi-Account Dashboard</div>
   </div>
-  <div class="nav-section">
-    <div class="nav-label">メニュー</div>
-    <div class="nav-item active" onclick="showPage('overview')">
-      <span class="nav-icon">📊</span>売上・利益
-    </div>
-    <div class="nav-item" onclick="showPage('products')">
-      <span class="nav-icon">🏷️</span>商品傾向
-    </div>
-    <div class="nav-item" onclick="showPage('countries')">
-      <span class="nav-icon">🌏</span>国別分析
-    </div>
-    <div class="nav-item" onclick="showPage('files')">
-      <span class="nav-icon">📁</span>CSVファイル管理
-    </div>
-    <div class="nav-item" onclick="showPage('keywords')">
-      <span class="nav-icon">🔖</span>キーワード設定
-    </div>
+  <div class="nav-s">
+    <div class="nav-lbl">メニュー</div>
+    <div class="ni act" onclick="nav('overview',this)"><span>📊</span>売上・利益</div>
+    <div class="ni" onclick="nav('trend',this)"><span>📈</span>月別推移</div>
+    <div class="ni" onclick="nav('products',this)"><span>🏷</span>商品傾向</div>
+    <div class="ni" onclick="nav('timing',this)"><span>🕐</span>曜日・時間帯</div>
+    <div class="ni" onclick="nav('ranking',this)"><span>💰</span>単価ランキング</div>
+    <div class="ni" onclick="nav('buyers',this)"><span>👤</span>リピーター</div>
+    <div class="ni" onclick="nav('countries',this)"><span>🌏</span>国別分析</div>
+    <div class="ni" onclick="nav('unclassified',this)"><span>🔧</span>未分類手動割当</div>
+    <div class="ni" onclick="nav('files',this)"><span>📁</span>ファイル管理</div>
+    <div class="ni" onclick="nav('keywords',this)"><span>🔖</span>キーワード設定</div>
   </div>
-  <div class="account-chips">
-    <div class="account-label">アカウント選択</div>
-    <div id="accountChips">
-      <div style="font-size:11px;color:var(--muted);padding:8px 0">CSVをアップロードすると<br>アカウントが表示されます</div>
-    </div>
+  <div class="acc-a">
+    <div class="acc-lbl">アカウント選択</div>
+    <div id="accChips"><div style="font-size:10px;color:var(--mu);line-height:1.5">CSVアップロード後<br>表示されます</div></div>
   </div>
 </div>
 
-<!-- ══ MAIN ══ -->
+<!-- MAIN -->
 <div id="main">
-  <!-- TOPBAR -->
   <div id="topbar">
-    <div class="topbar-title" id="topbarTitle">売上・利益ダッシュボード</div>
-    <div class="filter-group">
-      <span class="filter-label">期間</span>
-      <input type="date" id="dateFrom" onchange="applyFilters()">
-      <span style="color:var(--muted);font-size:11px">〜</span>
-      <input type="date" id="dateTo" onchange="applyFilters()">
-      <button class="btn btn-ghost" onclick="clearDates()">全期間</button>
-    </div>
+    <div class="tb-title" id="tbt">売上・利益</div>
+    <span class="fl">期間</span>
+    <input type="date" id="df" onchange="applyF()">
+    <span style="color:var(--mu);font-size:10px">〜</span>
+    <input type="date" id="dt" onchange="applyF()">
+    <button class="btn btn-g" onclick="clearF()">全期間</button>
   </div>
+  <div id="pages">
 
-  <!-- ══ PAGE: OVERVIEW ══ -->
-  <div class="page active" id="page-overview">
-    <div id="acc-bar-overview" class="acc-bar"></div>
-
-    <!-- KPIs -->
-    <div class="g4">
-      <div class="card">
-        <div class="kpi-label">商品売上</div>
-        <div class="kpi-val c-accent" id="kpi-subtotal">—</div>
-        <div class="kpi-sub">Item Subtotal</div>
+    <!-- ① OVERVIEW -->
+    <div class="page act" id="p-overview">
+      <div id="ab-overview" class="accbar"></div>
+      <div class="g4">
+        <div class="card"><div class="kl">商品売上</div><div class="kv c-acc" id="k-sub">—</div><div class="ks">Item Subtotal</div></div>
+        <div class="card"><div class="kl">送料収入</div><div class="kv c-acc4" id="k-ship">—</div><div class="ks">Shipping</div></div>
+        <div class="card"><div class="kl">総手数料・返金</div><div class="kv c-rd" id="k-cost">—</div><div class="ks">Fees + Refunds</div></div>
+        <div class="card"><div class="kl">純利益</div><div class="kv c-gr" id="k-profit">—</div><div class="ks" id="k-mg">—</div></div>
       </div>
-      <div class="card">
-        <div class="kpi-label">送料収入</div>
-        <div class="kpi-val c-accent4" id="kpi-shipping">—</div>
-        <div class="kpi-sub">Shipping Revenue</div>
-      </div>
-      <div class="card">
-        <div class="kpi-label">総手数料・返金</div>
-        <div class="kpi-val c-red" id="kpi-costs">—</div>
-        <div class="kpi-sub">Fees + Refunds</div>
-      </div>
-      <div class="card">
-        <div class="kpi-label">純利益</div>
-        <div class="kpi-val c-green" id="kpi-profit">—</div>
-        <div class="kpi-sub" id="kpi-margin">—</div>
-      </div>
-    </div>
-
-    <!-- BREAKDOWN + DONUT + PROFIT -->
-    <div class="g3">
-      <div class="card">
-        <div class="card-title">収支内訳</div>
-        <div id="breakdown-content">
-          <div class="empty" style="padding:24px 0">
-            <div class="empty-icon">📂</div>
-            <div class="empty-desc">CSVファイルをアップロードしてください</div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">支出の内訳</div>
-        <div class="ch ch-220"><canvas id="feeDonut"></canvas></div>
-      </div>
-      <div class="card" style="background:linear-gradient(135deg,#0f1f14 0%,#0a140f 100%);border-color:#1a3a20">
-        <div class="card-title" style="color:var(--green)">月間純利益</div>
-        <div style="text-align:center;padding:24px 0">
-          <div style="font-family:'Orbitron',sans-serif;font-size:38px;font-weight:900;color:var(--green);letter-spacing:-1px;line-height:1" id="big-profit">—</div>
-          <div style="font-size:10px;color:#34d47a80;letter-spacing:2px;text-transform:uppercase;margin-top:8px">Net Profit</div>
-          <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div style="background:#ffffff08;border-radius:8px;padding:12px;text-align:center">
-              <div style="font-size:10px;color:#34d47a80;margin-bottom:4px">利益率</div>
-              <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--green)" id="big-margin">—</div>
+      <div class="g3">
+        <div class="card"><div class="ct">収支内訳</div><div id="bkd"><div class="emp"><div class="ei">📂</div><div class="ed">CSVをアップロードしてください</div></div></div></div>
+        <div class="card"><div class="ct">支出内訳</div><div class="ch" style="height:200px"><canvas id="c-fee"></canvas></div></div>
+        <div class="pbox">
+          <div style="font-size:9px;color:#34d47a80;letter-spacing:2px;margin-bottom:8px">NET PROFIT</div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:32px;font-weight:900;color:var(--gr);letter-spacing:-1px;line-height:1" id="big-p">—</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+            <div style="background:#ffffff08;border-radius:7px;padding:10px">
+              <div style="font-size:9px;color:#34d47a80;margin-bottom:3px">利益率</div>
+              <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--gr)" id="big-mg">—</div>
             </div>
-            <div style="background:#ffffff08;border-radius:8px;padding:12px;text-align:center">
-              <div style="font-size:10px;color:#34d47a80;margin-bottom:4px">広告費率</div>
-              <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--accent2)" id="big-adrate">—</div>
+            <div style="background:#ffffff08;border-radius:7px;padding:10px">
+              <div style="font-size:9px;color:#34d47a80;margin-bottom:3px">広告費率</div>
+              <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--acc2)" id="big-ad">—</div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- ORDERS STATS -->
-    <div class="g4">
-      <div class="card">
-        <div class="kpi-label">総注文件数</div>
-        <div class="kpi-val" id="kpi-orders" style="font-size:30px">—</div>
-        <div class="kpi-sub">Total Orders</div>
-      </div>
-      <div class="card">
-        <div class="kpi-label">返金件数</div>
-        <div class="kpi-val c-red" id="kpi-refunds" style="font-size:30px">—</div>
-        <div class="kpi-sub" id="kpi-refund-rate">—</div>
-      </div>
-      <div class="card">
-        <div class="kpi-label">平均注文額</div>
-        <div class="kpi-val c-accent" id="kpi-avg" style="font-size:30px">—</div>
-        <div class="kpi-sub">Avg Order Value</div>
-      </div>
-      <div class="card">
-        <div class="kpi-label">eBay収集税（参考）</div>
-        <div class="kpi-val" id="kpi-tax" style="font-size:30px;color:var(--muted2)">—</div>
-        <div class="kpi-sub">eBay Collected Tax</div>
+      <div class="g4">
+        <div class="card"><div class="kl">総注文件数</div><div class="kv" id="k-ord" style="font-size:26px">—</div><div class="ks">Total Orders</div></div>
+        <div class="card"><div class="kl">返金件数</div><div class="kv c-rd" id="k-ref" style="font-size:26px">—</div><div class="ks" id="k-rr">—</div></div>
+        <div class="card"><div class="kl">平均注文額</div><div class="kv c-acc" id="k-avg" style="font-size:26px">—</div><div class="ks">Avg Order</div></div>
+        <div class="card"><div class="kl">eBay徴収税（参考）</div><div class="kv" id="k-tax" style="font-size:26px;color:var(--mu2)">—</div><div class="ks">eBay Tax</div></div>
       </div>
     </div>
-  </div>
 
-  <!-- ══ PAGE: PRODUCTS ══ -->
-  <div class="page" id="page-products">
-    <div id="acc-bar-products" class="acc-bar"></div>
-    <div class="g21">
-      <!-- LEFT: category ranking -->
-      <div class="card">
-        <div class="card-title">
-          <span id="cat-section-title">カテゴリ・タイトル別 販売数</span>
-          <div style="display:flex;gap:6px">
-            <select id="cat-type-sel" onchange="renderProducts()" style="font-size:10px;padding:3px 8px">
-              <option value="franchise">フランチャイズ</option>
-              <option value="item_type">アイテム種別</option>
-            </select>
-          </div>
-        </div>
-        <div class="bar-list" id="cat-bar-list"></div>
+    <!-- ② TREND -->
+    <div class="page" id="p-trend">
+      <div id="ab-trend" class="accbar"></div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="ct">月別売上推移 <div class="tabs" style="margin-bottom:0"><div class="tab sel" onclick="setTrendMode('revenue',this)">売上</div><div class="tab" onclick="setTrendMode('profit',this)">純利益</div><div class="tab" onclick="setTrendMode('orders',this)">注文数</div></div></div>
+        <div class="ch" style="height:280px"><canvas id="c-trend"></canvas></div>
       </div>
-      <!-- RIGHT: item type donut + top items -->
-      <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="g3">
+        <div class="card"><div class="kl">最高月</div><div class="kv c-acc" id="tr-best" style="font-size:16px">—</div><div class="ks" id="tr-best-v">—</div></div>
+        <div class="card"><div class="kl">最低月</div><div class="kv c-rd" id="tr-worst" style="font-size:16px">—</div><div class="ks" id="tr-worst-v">—</div></div>
+        <div class="card"><div class="kl">月平均</div><div class="kv c-gr" id="tr-avg" style="font-size:16px">—</div><div class="ks">Monthly Average</div></div>
+      </div>
+    </div>
+
+    <!-- ③ PRODUCTS -->
+    <div class="page" id="p-products">
+      <div id="ab-products" class="accbar"></div>
+      <div class="g21">
         <div class="card">
-          <div class="card-title">アイテム種別</div>
-          <div class="ch ch-200"><canvas id="typeDonut"></canvas></div>
+          <div class="ct">フランチャイズ別販売数
+            <select id="cat-sel" onchange="renderProducts()"><option value="franchise">フランチャイズ</option><option value="type">アイテム種別</option></select>
+          </div>
+          <div id="cat-bars"><div class="emp"><div class="ed">データなし</div></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="card"><div class="ct">アイテム種別</div><div class="ch" style="height:180px"><canvas id="c-type"></canvas></div></div>
+          <div class="card">
+            <div class="br"><span class="bl">識別済み</span><span class="bv c-gr" id="s-m">—</span></div>
+            <div class="br"><span class="bl">未分類</span><span class="bv" style="color:var(--or)" id="s-u">—</span></div>
+            <div class="br"><span class="bl">合計</span><span class="bv" id="s-t">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ TIMING -->
+    <div class="page" id="p-timing">
+      <div id="ab-timing" class="accbar"></div>
+      <div class="g2">
+        <div class="card"><div class="ct">曜日別 注文数</div><div class="ch" style="height:220px"><canvas id="c-dow"></canvas></div></div>
+        <div class="card"><div class="ct">時間帯別 注文数（UTC）</div><div class="ch" style="height:220px"><canvas id="c-hour"></canvas></div></div>
+      </div>
+      <div class="g3">
+        <div class="card"><div class="kl">最も売れる曜日</div><div class="kv c-acc" id="t-bestday" style="font-size:16px">—</div><div class="ks" id="t-bestday-v">—</div></div>
+        <div class="card"><div class="kl">最も売れる時間帯</div><div class="kv c-acc4" id="t-besthour" style="font-size:16px">—</div><div class="ks" id="t-besthour-v">—</div></div>
+        <div class="card"><div class="kl">週末 vs 平日比率</div><div class="kv c-gr" id="t-wkratio" style="font-size:16px">—</div><div class="ks">Weekend / Weekday</div></div>
+      </div>
+    </div>
+
+    <!-- ⑤ RANKING -->
+    <div class="page" id="p-ranking">
+      <div id="ab-ranking" class="accbar"></div>
+      <div class="g2">
+        <div class="card">
+          <div class="ct">高単価商品ランキング <span style="font-size:9px;color:var(--mu);font-weight:400">TOP20</span></div>
+          <div id="rank-high"></div>
         </div>
         <div class="card">
-          <div class="card-title">集計</div>
-          <div id="prod-stats">
-            <div class="brow"><span class="brow-lbl">識別済み商品</span><span class="brow-val" id="stat-matched">—</span></div>
-            <div class="brow"><span class="brow-lbl">未分類商品</span><span class="brow-val" id="stat-unmatched">—</span></div>
-            <div class="brow"><span class="brow-lbl">総アイテム数</span><span class="brow-val" id="stat-total">—</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ PAGE: COUNTRIES ══ -->
-  <div class="page" id="page-countries">
-    <div id="acc-bar-countries" class="acc-bar"></div>
-    <div class="g2">
-      <div class="card">
-        <div class="card-title">出荷先国ランキング</div>
-        <div id="country-list-el"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">国別シェア</div>
-        <div class="ch ch-260"><canvas id="countryDonut"></canvas></div>
-      </div>
-    </div>
-    <div class="g3">
-      <div class="card">
-        <div class="kpi-label">最多出荷先</div>
-        <div class="kpi-val c-accent" id="top-country" style="font-size:20px">—</div>
-        <div class="kpi-sub" id="top-country-pct">—</div>
-      </div>
-      <div class="card">
-        <div class="kpi-label">英語圏シェア（US+CA+GB+AU）</div>
-        <div class="kpi-val c-accent4" id="eng-share" style="font-size:20px">—</div>
-        <div class="kpi-sub">English-speaking countries</div>
-      </div>
-      <div class="card">
-        <div class="kpi-label">出荷先国数</div>
-        <div class="kpi-val" id="country-count" style="font-size:20px">—</div>
-        <div class="kpi-sub">Unique destination countries</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ PAGE: FILES ══ -->
-  <div class="page" id="page-files">
-    <div id="alerts-area"></div>
-    <div id="upload-zone">
-      <div style="font-size:40px;margin-bottom:12px">📤</div>
-      <h3>CSVファイルをアップロード</h3>
-      <p>クリックまたはドラッグ＆ドロップ<br>複数ファイル対応 — eBay取引レポートCSV</p>
-      <button class="btn btn-primary" id="upload-btn">ファイルを選択</button>
-    </div>
-    <input type="file" id="fileInput" accept=".csv" multiple>
-
-    <div class="sh"><span class="sh-title">アップロード済みファイル</span><div class="sh-line"></div><span class="sh-badge" id="file-count-badge">0件</span></div>
-    <div id="file-list-el">
-      <div class="empty">
-        <div class="empty-icon">📂</div>
-        <div class="empty-title">まだファイルがありません</div>
-        <div class="empty-desc">eBay取引レポートCSVをアップロードしてください</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ PAGE: KEYWORDS ══ -->
-  <div class="page" id="page-keywords">
-    <div class="kw-editor">
-      <h3>フランチャイズ・カテゴリ キーワード設定</h3>
-      <p>商品タイトルから自動でカテゴリを判定するキーワードを管理できます。左のカテゴリを選んでキーワードを追加・削除してください。</p>
-
-      <div style="display:flex;gap:16px;align-items:flex-start">
-        <!-- Category list -->
-        <div style="width:180px;flex-shrink:0">
-          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">カテゴリ</div>
-          <div id="kw-cat-list" class="kw-cats" style="flex-direction:column;gap:4px"></div>
-          <div style="margin-top:12px;display:flex;gap:6px">
-            <input type="text" class="kw-input" id="new-cat-input" placeholder="新カテゴリ名" style="font-size:10px;padding:5px 8px">
-            <button class="btn btn-primary" onclick="addCategory()" style="padding:5px 10px;font-size:10px">追加</button>
-          </div>
-        </div>
-        <!-- Keywords for selected category -->
-        <div style="flex:1">
-          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px" id="kw-selected-label">カテゴリを選択してください</div>
-          <div id="kw-tags-area" class="kw-tags"></div>
-          <div class="kw-add-row" id="kw-add-row" style="display:none">
-            <input type="text" class="kw-input" id="new-kw-input" placeholder="キーワードを入力（例: Evangelion）">
-            <button class="btn btn-primary" onclick="addKeyword()">追加</button>
-          </div>
+          <div class="ct">売上貢献度 TOP商品 <span style="font-size:9px;color:var(--mu);font-weight:400">（累計売上）</span></div>
+          <div id="rank-revenue"></div>
         </div>
       </div>
     </div>
 
-    <!-- Preview -->
-    <div class="card">
-      <div class="card-title">マッチングプレビュー <span style="font-size:10px;font-weight:400;color:var(--muted)">（現在のキーワードで商品タイトルを再判定）</span></div>
-      <div id="kw-preview"></div>
+    <!-- ⑥ BUYERS -->
+    <div class="page" id="p-buyers">
+      <div id="ab-buyers" class="accbar"></div>
+      <div class="g3" style="margin-bottom:12px">
+        <div class="card"><div class="kl">ユニーク購入者数</div><div class="kv c-acc" id="b-uniq" style="font-size:22px">—</div></div>
+        <div class="card"><div class="kl">リピーター数（2回以上）</div><div class="kv c-gr" id="b-rep" style="font-size:22px">—</div><div class="ks" id="b-rep-r">—</div></div>
+        <div class="card"><div class="kl">最多購入者</div><div class="kv c-acc2" id="b-top" style="font-size:14px;word-break:break-all">—</div><div class="ks" id="b-top-v">—</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">リピーター一覧 <span style="font-size:9px;color:var(--mu);font-weight:400">（2回以上購入）</span></div>
+        <div id="buyer-list"></div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- ══ DRILLDOWN MODAL ══ -->
-<div id="drilldown" onclick="if(event.target===this)closeDrill()">
-  <div class="drill-panel">
-    <div class="drill-header">
-      <div>
-        <div class="drill-title" id="drill-title">—</div>
-        <div class="drill-sub" id="drill-sub">—</div>
+    <!-- ⑦ COUNTRIES -->
+    <div class="page" id="p-countries">
+      <div id="ab-countries" class="accbar"></div>
+      <div class="g2">
+        <div class="card"><div class="ct">出荷先国ランキング</div><div id="ctry-list"></div></div>
+        <div class="card"><div class="ct">国別シェア</div><div class="ch" style="height:240px"><canvas id="c-ctry"></canvas></div></div>
       </div>
-      <button class="drill-close" onclick="closeDrill()">✕ 閉じる</button>
-    </div>
-    <div class="drill-g2">
-      <div class="card" style="padding:16px">
-        <div class="kpi-label">販売件数</div>
-        <div class="kpi-val c-accent" id="drill-count" style="font-size:28px">—</div>
-      </div>
-      <div class="card" style="padding:16px">
-        <div class="kpi-label">売上合計</div>
-        <div class="kpi-val c-green" id="drill-revenue" style="font-size:28px">—</div>
+      <div class="g3">
+        <div class="card"><div class="kl">最多出荷先</div><div class="kv c-acc" id="tc" style="font-size:16px">—</div><div class="ks" id="tc-p">—</div></div>
+        <div class="card"><div class="kl">英語圏シェア（US+CA+GB+AU）</div><div class="kv c-acc4" id="eng-s" style="font-size:16px">—</div></div>
+        <div class="card"><div class="kl">出荷先国数</div><div class="kv" id="ctry-n" style="font-size:16px">—</div></div>
       </div>
     </div>
-    <div class="g2" style="margin-bottom:0">
+
+    <!-- ⑧ UNCLASSIFIED ASSIGN -->
+    <div class="page" id="p-unclassified">
+      <div id="ab-unclassified" class="accbar"></div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="ct">未分類商品の手動カテゴリ割当 <span style="font-size:9px;color:var(--mu);font-weight:400">フランチャイズを選択して割り当て</span>
+          <button class="btn btn-g" onclick="renderUnclassified()" style="font-size:9px;padding:3px 8px">更新</button>
+        </div>
+        <div id="ua-list"><div class="emp"><div class="ed">データなし</div></div></div>
+      </div>
+    </div>
+
+    <!-- ⑨ FILES -->
+    <div class="page" id="p-files">
+      <div id="alerts"></div>
+      <div id="upzone">
+        <div style="font-size:32px;margin-bottom:10px">📤</div>
+        <h3>CSVファイルをアップロード</h3>
+        <p>クリックまたはドラッグ＆ドロップ<br>複数ファイル・複数アカウント対応</p>
+        <button class="btn btn-p" id="upbtn">ファイルを選択</button>
+      </div>
+      <input type="file" id="finput" accept=".csv" multiple style="display:none">
+      <div class="sh"><span class="sht">アップロード済み</span><div class="shl"></div><span class="shb" id="fcnt">0件</span></div>
+      <div id="flist"><div class="emp"><div class="ei">📂</div><div class="et">ファイルなし</div><div class="ed">CSVをアップロードしてください</div></div></div>
+    </div>
+
+    <!-- ⑩ KEYWORDS -->
+    <div class="page" id="p-keywords">
+      <div class="card" style="margin-bottom:12px">
+        <div class="ct">カテゴリ・フランチャイズ キーワード管理</div>
+        <div style="font-size:10px;color:var(--mu);margin-bottom:12px">商品タイトルに含まれるキーワードでフランチャイズを自動判定します。</div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="width:160px;flex-shrink:0">
+            <div style="font-size:9px;color:var(--mu);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">カテゴリ</div>
+            <div id="kw-cats"></div>
+            <div style="display:flex;gap:4px;margin-top:8px">
+              <input type="text" id="new-cat" placeholder="新カテゴリ" style="flex:1;font-size:10px;padding:4px 8px">
+              <button class="btn btn-p" onclick="addCat()" style="font-size:10px;padding:4px 8px">追加</button>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:9px;color:var(--mu);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase" id="kw-sel-lbl">カテゴリを選択</div>
+            <div id="kw-tags" style="margin-bottom:10px;min-height:32px"></div>
+            <div style="display:flex;gap:6px" id="kw-add-row">
+              <input type="text" id="new-kw" placeholder="フランチャイズ名（例: BTS）" style="flex:1;font-size:11px">
+              <button class="btn btn-p" onclick="addKw()">追加</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="card">
-        <div class="card-title">アイテム種別内訳</div>
-        <div id="drill-types" class="bar-list"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">出荷先国</div>
-        <div id="drill-countries"></div>
+        <div class="ct">未分類プレビュー</div>
+        <div id="kw-prev"></div>
       </div>
     </div>
-    <div class="drill-items-list">
-      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:8px;color:var(--muted2)">売れた商品リスト</div>
-      <div id="drill-items"></div>
+
+  </div><!-- /pages -->
+</div><!-- /main -->
+
+<!-- DRILL MODAL -->
+<div id="drill" onclick="if(event.target===this)closeDrill()">
+  <div class="dp">
+    <div class="dh">
+      <div><div class="dt" id="d-title">—</div><div class="ds" id="d-sub">—</div></div>
+      <button class="dc" onclick="closeDrill()">✕ 閉じる</button>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card" style="padding:12px"><div class="kl">販売件数</div><div class="kv c-acc4" id="d-cnt" style="font-size:24px">—</div></div>
+      <div class="card" style="padding:12px"><div class="kl">売上合計</div><div class="kv c-gr" id="d-rev" style="font-size:24px">—</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card" style="padding:12px"><div class="ct" style="font-size:11px">アイテム種別</div><div id="d-types"></div></div>
+      <div class="card" style="padding:12px"><div class="ct" style="font-size:11px">出荷先国</div><div id="d-ctries"></div></div>
+    </div>
+    <div class="card" style="padding:12px">
+      <div style="font-size:11px;font-weight:500;color:var(--mu2);margin-bottom:8px">売れた商品リスト</div>
+      <div id="d-items"></div>
     </div>
   </div>
 </div>
 
 <script>
-// ══ STATE ══
-const STATE = {
-  files: [],           // {id, name, account, period, rows, hash}
-  accounts: {},        // {accountId: {name, color}}
-  selectedAccounts: [],
-  dateFrom: null,
-  dateTo: null,
-  keywords: {          // category -> [keyword patterns]
-    'アニメ': {
-      'Evangelion': ['evangelion','eva unit','eva '],
-      'Assault Lily': ['assault lily'],
-      'Kantai Collection': ['kantai','kancolle'],
-      'Demon Slayer': ['demon slayer','kimetsu'],
-      'Jujutsu Kaisen': ['jujutsu kaisen','jjk'],
-      'Mob Psycho 100': ['mob psycho'],
-      'Detective Conan': ['detective conan','conan'],
-      'Seraph of the End': ['seraph of'],
-      'Blue Archive': ['blue archive'],
-      'Code Geass': ['code geass'],
-      'Fate/': ['fate stay','fate/'],
-      'D.Gray-man': ['d.gray-man','d gray man'],
-      'Persona': ['persona 3','persona 4','persona 5'],
-      'Macross': ['macross'],
-      'Gushing Over Magical Girls': ['gushing over magical'],
-      'Identity V': ['identity v'],
-      'Taimanin': ['taimanin'],
-      'Resident Evil': ['resident evil','biohazard'],
-      'Street Fighter': ['street fighter'],
-      'One Punch Man': ['one punch man'],
-      'My Hero Academia': ['my hero academia','boku no hero'],
-      'Sailor Moon': ['sailor moon'],
-      'Precure': ['precure','pretty cure'],
-      'Digimon': ['digimon'],
-      'Tokyo Revengers': ['tokyo revengers'],
-      'Fairy Tail': ['fairy tail'],
-      'Overlord': ['overlord'],
-      'Bleach': ['bleach','ichigo'],
-      '9 R.I.P.': ['9 r.i.p.','nine lip'],
-      'Hololive': ['hololive','holo live','calliope'],
-      'Kakegurui': ['kakegurui'],
-      'Call of the Night': ['call of the night','call of night'],
-      'Kemono Friends': ['kemono friends'],
-      'Bungo Stray Dogs': ['bungo stray'],
-      'Yakuza': ['yakuza','gagotoku'],
-      'Hell\'s Paradise': ["hell's paradise",'jigokuraku'],
-      'Assassination Classroom': ['assassination classroom'],
-      'Oshi no Ko': ['oshi no ko'],
-      'Granblue Fantasy': ['granblue'],
-      'Violet Evergarden': ['violet evergarden'],
-      'Osomatsu-san': ['osomatsu'],
-      'Rose of Versailles': ['rose of versailles'],
-      'Utena': ['utena'],
-      'Final Fantasy': ['final fantasy','ff7r','ff7','midgar'],
-      'Dead by Daylight': ['dead by daylight'],
-      'YuruYuri': ['yuruyuri','yuru yuri'],
-      'K-On': ['k-on','k on'],
-      'Lucky Star': ['lucky star'],
-      'Angel Beats': ['angel beats'],
-      'Hatsune Miku': ['hatsune miku','miku'],
-      'Madoka Magica': ['madoka magica','madoka'],
-      'Shaman King': ['shaman king'],
-      'NEEDY STREAMER': ['needy streamer'],
-      'Gnosia': ['gnosia'],
-      'The Dangers in My Heart': ['dangers in my heart'],
-      'Tis Time for Torture': ['tis time for torture','torture, princess'],
-      'Record of Ragnarok': ['record of ragnarok'],
-      'Delicious in Dungeon': ['delicious in dungeon'],
-      'Jojo': ['jojo'],
-      'Love Live': ['love live'],
-      'Gachiakuta': ['gachiakuta'],
+// ═══════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════
+const COLS=['#f0c040','#e8457a','#38e8b0','#6a7fff','#f08030','#34d47a','#00c4e8','#b06aff','#ff6060','#80e060','#e0a0ff','#40c8ff','#ffaaaa','#aaffcc','#aaccff'];
+const ACOLS=['#f0c040','#e8457a','#38e8b0','#6a7fff','#f08030','#b06aff'];
+const FLAGS={US:'🇺🇸',CA:'🇨🇦',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',AU:'🇦🇺',TH:'🇹🇭',JP:'🇯🇵',KR:'🇰🇷',IT:'🇮🇹',ES:'🇪🇸',GR:'🇬🇷',AE:'🇦🇪',SA:'🇸🇦',HK:'🇭🇰',IE:'🇮🇪',RO:'🇷🇴',SG:'🇸🇬',NL:'🇳🇱',PL:'🇵🇱',MX:'🇲🇽',BR:'🇧🇷',AR:'🇦🇷',NO:'🇳🇴',SE:'🇸🇪',DK:'🇩🇰',FI:'🇫🇮',PT:'🇵🇹',BE:'🇧🇪',CH:'🇨🇭',AT:'🇦🇹',CZ:'🇨🇿',HU:'🇭🇺',PH:'🇵🇭',MY:'🇲🇾',ID:'🇮🇩',TW:'🇹🇼',CN:'🇨🇳'};
+const CNAME={US:'アメリカ',CA:'カナダ',GB:'イギリス',DE:'ドイツ',FR:'フランス',AU:'オーストラリア',TH:'タイ',JP:'日本',KR:'韓国',IT:'イタリア',ES:'スペイン',GR:'ギリシャ',AE:'UAE',SA:'サウジアラビア',HK:'香港',IE:'アイルランド',RO:'ルーマニア',SG:'シンガポール',NL:'オランダ',PL:'ポーランド',MX:'メキシコ',BR:'ブラジル',AR:'アルゼンチン',NO:'ノルウェー',SE:'スウェーデン',DK:'デンマーク',FI:'フィンランド',PT:'ポルトガル',BE:'ベルギー',CH:'スイス',AT:'オーストリア',CZ:'チェコ',HU:'ハンガリー',PH:'フィリピン',MY:'マレーシア',ID:'インドネシア',TW:'台湾',CN:'中国'};
+const ITYPES=['Acrylic Stand','Acrylic Keychain','Acrylic Block','Acrylic Card','Keychain','Coaster','T-shirt','Tee','Bromide','Poster','Clear File','Charm','Rubber Charm','Metal Charm','Wire Charm','Tapestry','Sticker','Badge','Can Badge','Card','Postcard','Lottery','Art Book','Catalog','Tote Bag','Desk Mat','Blanket','Towel','Pen','Mouse Pad','Pin','Pick','Figure','Puzzle','Sleeve','Binder','Box','Set','Stand','Plush','Cushion','Mug','Bookmark','Strap','Mirror','Brush','Notepad','Shikishi','Canvas','Board','Statue','Mat','Doll'];
+const DAYS=['日','月','火','水','木','金','土'];
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const S={
+  files:[],accounts:{},selAccs:[],
+  dateFrom:null,dateTo:null,
+  trendMode:'revenue',
+  selKwCat:null,
+  manualAssign:{}, // title -> franchiseName
+  charts:{},
+  kw:{
+    'アニメ':{
+      'Evangelion':['evangelion','eva unit','eva rebuild','neon genesis'],
+      'Assault Lily':['assault lily'],
+      'Kantai Collection':['kantai','kancolle'],
+      'Demon Slayer':['demon slayer','kimetsu no yaiba','tanjiro','nezuko'],
+      'Jujutsu Kaisen':['jujutsu kaisen','jjk','gojo','itadori','yuji'],
+      'Mob Psycho 100':['mob psycho'],
+      'Detective Conan':['detective conan','conan edogawa','case closed'],
+      'Seraph of the End':['seraph of the end','owari no seraph'],
+      'Blue Archive':['blue archive'],
+      'Code Geass':['code geass','lelouch'],
+      'Fate/':['fate stay','fate/','fate grand','fate zero','fate hollow','rin tohsaka','saber'],
+      'D.Gray-man':['d.gray-man','d gray man','allen walker'],
+      'Persona':['persona 3','persona 4','persona 5','atlus cafe','joker persona'],
+      'Macross':['macross','valkyrie'],
+      'Gushing Over Magical Girls':['gushing over magical'],
+      'Identity V':['identity v'],
+      'Taimanin':['taimanin'],
+      'Resident Evil':['resident evil','biohazard','re village','re2','re3','re4','leon kennedy','claire redfield'],
+      'Street Fighter':['street fighter','sf6','chun-li','ryu hadoken'],
+      'One Punch Man':['one punch man','saitama','genos'],
+      'My Hero Academia':['my hero academia','boku no hero','deku','bakugo','todoroki'],
+      'Sailor Moon':['sailor moon','usagi tsukino','tuxedo mask'],
+      'Precure':['precure','pretty cure'],
+      'Digimon':['digimon','agumon','taichi'],
+      'Tokyo Revengers':['tokyo revengers','mikey','draken','takemichi'],
+      'Fairy Tail':['fairy tail','natsu dragneel','lucy heartfilia','erza scarlet'],
+      'Overlord':['overlord','ainz ooal gown'],
+      'Bleach':['bleach','ichigo kurosaki','rukia','renji','hollow'],
+      '9 R.I.P.':['9 r.i.p.','nine lip'],
+      'Hololive':['hololive','holo live','calliope','mori calliope','gura','korone','pekora','suisei','aqua','marine','rushia','noel','flare'],
+      'Nijisanji':['nijisanji','kuzuha','kanae','lulu'],
+      'Kakegurui':['kakegurui','jabami'],
+      'Call of the Night':['call of the night','call of night','yofukashi','kou yamori','nazuna'],
+      'Kemono Friends':['kemono friends'],
+      'Bungo Stray Dogs':['bungo stray','bungou stray','chuya nakahara','osamu dazai bungou'],
+      'Yakuza':['yakuza','like a dragon','gagotoku'],
+      "Hell's Paradise":["hell's paradise",'jigokuraku','gabimaru'],
+      'Assassination Classroom':['assassination classroom','nagisa shiota','karma akabane','korosensei'],
+      'Oshi no Ko':['oshi no ko','aqua hoshino','ruby hoshino'],
+      'Granblue Fantasy':['granblue','granblue fantasy'],
+      'Violet Evergarden':['violet evergarden'],
+      'Osomatsu-san':['osomatsu','choromatsu','ichimatsu','jyushimatsu'],
+      'Rose of Versailles':['rose of versailles','oscar','andre versailles'],
+      'Utena':['utena','revolutionary girl'],
+      'Final Fantasy':['final fantasy','ff7r','ff7','midgar','ff14','ffxiv','ff16','cloud strife','tifa lockhart','aerith'],
+      'Dead by Daylight':['dead by daylight','dbd'],
+      'YuruYuri':['yuruyuri','yuru yuri','akari akaza'],
+      'K-On':['k-on','k on','yui hirasawa','mio akiyama','ritsu tainaka','tsumugi'],
+      'Lucky Star':['lucky star','konata izumi','kagami hiiragi'],
+      'Angel Beats':['angel beats','kanade tachibana','otonashi'],
+      'Hatsune Miku':['hatsune miku','vocaloid','miku'],
+      'Madoka Magica':['madoka magica','puella magi','homura akemi','sayaka miki','mami tomoe'],
+      'Shaman King':['shaman king','yoh asakura'],
+      'NEEDY STREAMER':['needy streamer','needy girl overdose'],
+      'Gnosia':['gnosia'],
+      'The Dangers in My Heart':['dangers in my heart','ichikawa kyotaro','anna yamada'],
+      'Tis Time for Torture':['tis time for torture','torture, princess'],
+      'Record of Ragnarok':['record of ragnarok','shuumatsu no valkyrie'],
+      'Delicious in Dungeon':['delicious in dungeon','dungeon meshi','laios','marcille'],
+      'Jojo':["jojo's bizarre","jojo bizarre",'dio brando','giorno','josuke','jolyne','jotaro'],
+      'Love Live':['love live','aqours','muse μs','nijigaku','liella'],
+      'Gachiakuta':['gachiakuta'],
+      'Seven Deadly Sins':['seven deadly sins','nanatsu no taizai','meliodas','elizabeth'],
+      'Black Clover':['black clover','asta clover','yuno clover','grimoire'],
+      'Bocchi the Rock':['bocchi the rock','kessoku band','gotoh hitori','ijichi nijika'],
+      'Solo Leveling':['solo leveling','sung jinwoo'],
+      'Death Note':['death note','light yagami','ryuk shinigami','l lawliet'],
+      'Sakamoto Days':['sakamoto days','natsuki seba','sakamoto taro'],
+      'Chainsaw Man':['chainsaw man','denji chainsaw','makima','power blood','aki hayakawa'],
+      'Spy x Family':['spy x family','loid forger','anya forger','yor forger'],
+      'Frieren':['frieren','beyond journey','sousou no frieren'],
+      'Bleach TYBW':['thousand year blood war','tybw'],
+      'One Piece':['one piece','luffy','zoro','nami one piece','sanji one piece','chopper'],
+      'Naruto':['naruto','sasuke','sakura haruno','kakashi','hinata','boruto'],
+      'Dragon Ball':['dragon ball','goku','vegeta','gohan','piccolo','frieza','cell'],
+      'Hunter x Hunter':['hunter x hunter','hxh','gon freecss','killua','kurapika','leorio'],
+      'Fullmetal Alchemist':['fullmetal alchemist','edward elric','alphonse elric','fma'],
+      'Steins;Gate':['steins;gate','okabe rintaro','kurisu makise','mayuri'],
+      'Re:Zero':['re:zero','subaru natsuki','emilia rezero','rem rezero','ram rezero'],
+      'KonoSuba':['konosuba','kazuma sato','aqua konosuba','megumin','darkness'],
+      'Sword Art Online':['sword art online','sao','kirito','asuna sao'],
+      'No Game No Life':['no game no life','sora ngnl','shiro ngnl'],
+      'Lycoris Recoil':['lycoris recoil','chisato nishikigi','takina inoue'],
+      'Blue Lock':['blue lock','isagi yoichi','bachira','nagi'],
+      'Mushoku Tensei':['mushoku tensei','rudeus greyrat','eris greyrat','sylphiette'],
+      'Tensura':['tensura','that time i got reincarnated','rimuru tempest'],
+      'Touhou':['touhou','reimu hakurei','marisa kirisame','sakuya izayoi','remilia scarlet'],
+      'Hypnosis Mic':['hypnosis mic','hypmic'],
+      'Ensemble Stars':['ensemble stars','enstars'],
+      'Idolmaster':['idolmaster','idolm@ster'],
+      'Uta no Prince':['uta no prince','utapri'],
+      'A3!':['a3!','act addict actors'],
+      'Twisted Wonderland':['twisted wonderland','twst'],
+      'Obey Me':['obey me'],
+      'Genshin Impact':['genshin impact','lumine','aether genshin','hutao','zhongli','raiden shogun'],
+      'Honkai':['honkai impact','honkai star','kiana','herrscher'],
+      'Arknights':['arknights','rhodes island'],
+      'FGO':['fate grand order','fgo','nero bride'],
+      'Granblue Fantasy Versus':['gbvs','gbf versus'],
+      'Puyo Puyo':['puyo puyo','amitie puyo','ringo amitie'],
+      'Osomatsu':['osomatsu'],
+      'Ace of Diamond':['ace of diamond','eijun sawamura'],
+      'Haikyuu':['haikyuu','shoyo hinata','tobio kageyama'],
+      'Kuroko no Basket':['kuroko no basket','kuroko basketball','tetsuya kuroko'],
+      'Prince of Tennis':['prince of tennis','ryoma echizen'],
+      'Free!':['free!','haruka nanase swimming','makoto tachibana'],
+      'Yuri on Ice':['yuri on ice','yuri plisetsky','victor nikiforov'],
+      'Given':['given manga','mafuyu sato given'],
+      'Kamisama Kiss':['kamisama kiss','kamisama hajimemashita'],
+      'Clannad':['clannad','nagisa furukawa'],
+      'Anohana':['anohana','ano hi mita hana','meiko honma'],
+      'Your Lie in April':['your lie in april','shigatsu wa','kousei arima'],
+      'Weathering with You':['weathering with you','tenki no ko'],
+      'Spirited Away':['spirited away','chihiro','no face','totoro'],
+      'Evangelion USJ':['usj evangelion'],
+      'USJ':['usj universal','universal studios japan'],
+      'Rilakkuma':['rilakkuma'],
+      'Cinnamoroll':['cinnamoroll'],
+      'Sanrio':['sanrio','hello kitty','pompompurin','my melody','kuromi'],
+      'Sumikko Gurashi':['sumikko gurashi'],
+      'Snoopy':['snoopy','peanuts charlie'],
+      'Tom and Jerry':['tom and jerry'],
+      'Disney':['disney','mickey mouse','minnie mouse','winnie the pooh'],
+      'Capcom':['capcom','devil may cry','monster hunter','mega man'],
+      'Konami':['konami','castlevania','metal gear','silent hill'],
+      'Bandai':['bandai','gundam','kamen rider','super sentai'],
+      'Pikmin':['pikmin'],
+      'Splatoon':['splatoon','inkling','octoling'],
+      'Xenoblade':['xenoblade','shulk','pyra'],
+      'Fire Emblem':['fire emblem','byleth','corrin'],
+      'Persona 3 Reload':['persona 3 reload','p3r'],
+      'Mato Seihei':['mato seihei','chained soldier','kyoka uzen'],
+      'Lycoris':['lycoris'],
+      'Nier':['nier automata','2b nier','yorha'],
+      'Danganronpa':['danganronpa','monokuma'],
+      'Ace Attorney':['ace attorney','phoenix wright','miles edgeworth'],
+      'Danmachi':['danmachi','is it wrong to pick up girls','bell cranel','hestia'],
+      'Miss Kobayashi':["miss kobayashi",'dragon maid','tohru kobayashi'],
+      'Isekai Quartet':['isekai quartet'],
+      'Talentless Nana':['talentless nana'],
+      'Muv-Luv':['muv-luv','muv luv'],
+      'Higurashi':['higurashi','when they cry','rika furude'],
+      'Umineko':['umineko','beatrice umineko'],
+      'Fist of the North Star':['fist of the north star','hokuto no ken','kenshiro'],
+      'City Hunter':['city hunter','ryo saeba'],
+      'Captain Tsubasa':['captain tsubasa','tsubasa ozora'],
+      'Saint Seiya':['saint seiya','pegasus seiya','bronze saint','gold saint'],
+      'Macross Delta':['macross delta','mikumo guynemer','freyja wion'],
+      'Ghost in the Shell':['ghost in the shell','motoko kusanagi'],
+      'Lupin the Third':['lupin the third','lupine','arsene lupin','goemon ishikawa'],
+      'Cowboy Bebop':['cowboy bebop','spike spiegel','faye valentine'],
+      'Space Dandy':['space dandy'],
+      'Trigun':['trigun','vash the stampede'],
+      'Black Lagoon':['black lagoon','revy black lagoon'],
+      'Hellsing':['hellsing','alucard hellsing'],
+      'D.Gray-man Hallow':['d.gray-man hallow'],
+      'Ikki Tousen':['ikki tousen'],
+      'Servamp':['servamp'],
+      'Under Eden':['under eden'],
+      'Mononoke':['mononoke','medicine seller'],
+      'Pachislot':['pachislot','pachinko'],
+      'Chaos TCG':['chaos tcg','chaos card'],
+      'Weiss Schwarz':['weiss schwarz','ws card'],
+      'Cardfight Vanguard':['cardfight vanguard'],
+      'Union Arena':['union arena'],
+      'Build Divide':['build divide'],
     },
-    'K-POP': {},
-    'ゲーム': {},
-    'その他': {},
+    'K-POP':{
+      'BTS':['bts','bangtan','rm bts','jin bts','suga bts','j-hope','jimin bts','v bts','jungkook'],
+      'BLACKPINK':['blackpink','jennie','lisa blackpink','rosé blackpink','jisoo'],
+      'EXO':['exo','baekhyun','chanyeol exo','sehun'],
+      'GOT7':['got7','mark got7','jackson got7'],
+      'ATEEZ':['ateez','hongjoong','mingi'],
+      'Stray Kids':['stray kids','skz','bang chan','lee know','changbin'],
+      'TWICE':['twice','nayeon','jihyo','momo','sana','tzuyu'],
+      'aespa':['aespa','karina aespa','ningning'],
+      'NCT':['nct 127','nct dream','wayv','taeyong','mark nct'],
+      'SEVENTEEN':['seventeen','svt','hoshi','woozi'],
+      'MONSTA X':['monsta x','shownu','minhyuk'],
+      'TXT':['txt','tomorrow x together','yeonjun'],
+      'Enhypen':['enhypen','jungwon'],
+      'New Jeans':['new jeans','newjeans','hanni','minji'],
+      'IVE':['ive kpop','wonyoung','yujin ive'],
+      'LE SSERAFIM':['le sserafim','kim chaewon','huh yunjin'],
+    },
+    'ゲーム':{
+      'Minecraft':['minecraft','creeper minecraft'],
+      'Among Us':['among us'],
+      'Fortnite':['fortnite'],
+      'League of Legends':['league of legends','lol champion'],
+      'Valorant':['valorant'],
+      'Apex Legends':['apex legends','wraith apex','lifeline apex'],
+      'Overwatch':['overwatch','dva overwatch','tracer overwatch'],
+      'Pokemon':['pokemon','pikachu','charizard','eevee','gengar','mewtwo','snorlax'],
+      'Mario':['super mario','mario bros','luigi mario','princess peach','bowser','yoshi mario'],
+      'Zelda':['zelda','link zelda','ganon','breath of the wild','tears of the kingdom'],
+      'Kirby':['kirby','meta knight','king dedede'],
+      'Animal Crossing':['animal crossing','isabelle','tom nook'],
+      'Smash Bros':['super smash bros','smash ultimate'],
+      'Metroid':['metroid','samus aran'],
+      'Donkey Kong':['donkey kong'],
+      'Bayonetta':['bayonetta'],
+      'Undertale':['undertale','sans undertale','frisk','toriel'],
+      'Deltarune':['deltarune','kris deltarune','susie deltarune'],
+      'Cuphead':['cuphead'],
+      'Hollow Knight':['hollow knight','silksong'],
+      'Elden Ring':['elden ring','margit','malenia'],
+      'Dark Souls':['dark souls','solaire','nameless king'],
+      'Bloodborne':['bloodborne'],
+      'Sekiro':['sekiro','wolf sekiro'],
+      'Ghost of Tsushima':['ghost of tsushima'],
+      'Persona (Game)':['atlus persona','p5 royal'],
+      'Dragon Quest':['dragon quest','dq11','slime dragon quest'],
+      'Monster Hunter':['monster hunter','mh rise','mh world','rathalos'],
+      'Rockman':['rockman','mega man'],
+      'Devil May Cry':['devil may cry','dmc','dante dmc','vergil dmc'],
+      'Bayonetta':['bayonetta'],
+      'Tekken':['tekken','kazuya mishima','jin kazama'],
+      'Granblue':['granblue fantasy'],
+      'Cyberpunk':['cyberpunk 2077','v cyberpunk'],
+      'The Witcher':['the witcher','geralt'],
+      'Fallout':['fallout','vault boy'],
+      'Halo':['halo','master chief'],
+      'Assassins Creed':["assassin's creed",'assassins creed'],
+      'Sega':['sonic the hedgehog','sonic sega','tails sonic','knuckles sonic'],
+      'Atelier':['atelier ryza','atelier sophie','ryza'],
+      'Tales of':['tales of','vesperia','arise tales'],
+      'Star Ocean':['star ocean','fidel camelot'],
+      'Xenosaga':['xenosaga','kos-mos'],
+    },
+    'その他':{},
   },
-  selectedKwCat: 'アニメ',
-  selectedKwFranchise: null,
-  currentPage: 'overview',
-  feeDonutChart: null,
-  typeDonutChart: null,
-  countryDonutChart: null,
 };
 
-const COLORS = ['#f0c040','#e8457a','#38e8b0','#6a7fff','#f08030','#34d47a','#00c4e8','#b06aff','#ff6060','#80e060','#e0a0ff','#40c8ff'];
-const ACCOUNT_COLORS = ['#f0c040','#e8457a','#38e8b0','#6a7fff','#f08030','#b06aff'];
-const FLAGS = {US:'🇺🇸',CA:'🇨🇦',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',AU:'🇦🇺',TH:'🇹🇭',JP:'🇯🇵',KR:'🇰🇷',IT:'🇮🇹',ES:'🇪🇸',GR:'🇬🇷',AE:'🇦🇪',SA:'🇸🇦',HK:'🇭🇰',IE:'🇮🇪',RO:'🇷🇴'};
-const COUNTRY_NAMES = {US:'アメリカ',CA:'カナダ',GB:'イギリス',DE:'ドイツ',FR:'フランス',AU:'オーストラリア',TH:'タイ',JP:'日本',KR:'韓国',IT:'イタリア',ES:'スペイン',GR:'ギリシャ',AE:'UAE',SA:'サウジアラビア',HK:'香港',IE:'アイルランド',RO:'ルーマニア'};
-const ITEM_TYPE_KW = ['Acrylic Stand','Acrylic Keychain','Acrylic Block','Keychain','Coaster','T-shirt','Bromide','Poster','Clear File','Charm','Rubber Charm','Metal Charm','Tapestry','Sticker','Badge','Card','Lottery','Art Book','Tote Bag','Desk Mat','Blanket','Towel','Pen','Mouse Pad','Pin','Pick','Figure','Puzzle','Towel','Blanket','Box','Set'];
+// ═══════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════
+const toF=v=>{const s=String(v||'').trim();if(!s||s==='--')return 0;return parseFloat(s)||0;};
+const fmt=n=>'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=(a,b)=>b?((a/b)*100).toFixed(1)+'%':'—';
+const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+const hashStr=s=>{let h=0;for(let i=0;i<Math.min(s.length,3000);i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(16);};
 
-// ══ CSV PARSING ══
-function parseCSV(text) {
-  const lines = text.split('\n');
-  let headerIdx = -1;
-  let sellerName = '';
-  let startDate = '', endDate = '';
-  for (let i = 0; i < Math.min(15, lines.length); i++) {
-    if (lines[i].includes('Transaction creation date')) { headerIdx = i; }
-    if (lines[i].includes('Seller')) { sellerName = (lines[i].match(/"([^"]+)"[^"]*"([^"]+)"/) || [])[2] || ''; }
-    if (lines[i].includes('Start date')) { startDate = (lines[i].match(/"([^"]+)"[^"]*"([^"]+)"/) || [])[2] || ''; }
-    if (lines[i].includes('End date')) { endDate = (lines[i].match(/"([^"]+)"[^"]*"([^"]+)"/) || [])[2] || ''; }
-  }
-  if (headerIdx < 0) return null;
-
-  const parseRow = (line) => {
-    const res = []; let cur = ''; let inQ = false;
-    for (let c of line) {
-      if (c === '"') inQ = !inQ;
-      else if (c === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
-      else cur += c;
-    }
-    res.push(cur.trim()); return res;
-  };
-
-  const headers = parseRow(lines[headerIdx]);
-  const rows = [];
-  for (let i = headerIdx + 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    const vals = parseRow(lines[i]);
-    if (vals.length < 5) continue;
-    const row = {};
-    headers.forEach((h, j) => { row[h] = vals[j] || '--'; });
-    rows.push(row);
-  }
-  return { sellerName: sellerName || 'unknown', startDate, endDate, rows };
-}
-
-function toF(v) { const s = String(v||'').trim(); if (!s || s==='--') return 0; return parseFloat(s)||0; }
-
-function hashStr(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) { h = (Math.imul(31, h) + s.charCodeAt(i)) | 0; }
-  return h.toString(16);
-}
-
-// ══ IDENTIFY ITEM TYPE ══
-function getItemType(title) {
-  const t = title.toLowerCase();
-  for (const kw of ITEM_TYPE_KW) {
-    if (t.includes(kw.toLowerCase())) return kw;
-  }
+function getItemType(t){
+  const l=t.toLowerCase();
+  for(const k of ITYPES)if(l.includes(k.toLowerCase()))return k;
   return 'その他';
 }
 
-// ══ IDENTIFY FRANCHISE ══
-function getFranchise(title) {
-  const t = title.toLowerCase();
-  for (const [catName, franchises] of Object.entries(STATE.keywords)) {
-    for (const [franchise, patterns] of Object.entries(franchises)) {
-      for (const pat of patterns) {
-        if (t.includes(pat.toLowerCase())) return { category: catName, franchise };
-      }
+function getFranchise(t){
+  const l=t.toLowerCase();
+  // Check manual assignments first
+  if(S.manualAssign[t])return{cat:'手動',fr:S.manualAssign[t]};
+  for(const[cat,frs]of Object.entries(S.kw))
+    for(const[fr,pats]of Object.entries(frs))
+      for(const p of pats)if(p&&l.includes(p.toLowerCase()))return{cat,fr};
+  return{cat:'未分類',fr:'未分類'};
+}
+
+function parseDate(ds){
+  if(!ds||ds==='--')return null;
+  const m=ds.match(/(\d+)\s+(\d+),\s+(\d+)/);
+  if(m)return new Date(+m[3],+m[1]-1,+m[2]);
+  return null;
+}
+
+// ═══════════════════════════════════════
+//  CSV PARSE
+// ═══════════════════════════════════════
+function parseCSV(text){
+  const lines=text.split('\n');
+  let hi=-1,seller='',sd='',ed='';
+  for(let i=0;i<Math.min(15,lines.length);i++){
+    if(lines[i].includes('Transaction creation date'))hi=i;
+    const sm=lines[i].match(/"Seller"[^"]*"([^"]+)"/);if(sm)seller=sm[1];
+    const sdm=lines[i].match(/"Start date"[^"]*"([^"]+)"/);if(sdm)sd=sdm[1];
+    const edm=lines[i].match(/"End date"[^"]*"([^"]+)"/);if(edm)ed=edm[1];
+  }
+  if(hi<0)return null;
+  const pr=line=>{const r=[];let c='',q=false;for(const ch of line){if(ch==='"')q=!q;else if(ch===','&&!q){r.push(c.trim());c='';}else c+=ch;}r.push(c.trim());return r;};
+  const hdrs=pr(lines[hi]);
+  const rows=[];
+  for(let i=hi+1;i<lines.length;i++){
+    if(!lines[i].trim())continue;
+    const v=pr(lines[i]);if(v.length<5)continue;
+    const row={};hdrs.forEach((h,j)=>row[h]=v[j]||'--');
+    rows.push(row);
+  }
+  return{seller:seller||'unknown',sd,ed,rows};
+}
+
+// ═══════════════════════════════════════
+//  FILE HANDLING
+// ═══════════════════════════════════════
+async function handleFiles(files){
+  for(const f of files){
+    const text=await f.text();
+    const hash=hashStr(text);
+    if(S.files.find(x=>x.hash===hash)){showAlert(`「${f.name}」は同一ファイルが既に存在します`,'wn');continue;}
+    const p=parseCSV(text);
+    if(!p){showAlert(`「${f.name}」はeBay CSVとして認識できませんでした`,'er');continue;}
+    const dup=S.files.find(x=>x.account===p.seller&&x.sd===p.sd&&x.ed===p.ed);
+    if(dup)showAlert(`アカウント「${p.seller}」の同期間データが既に存在します（${p.sd}〜${p.ed}）`,'wn');
+    if(!S.accounts[p.seller]){
+      S.accounts[p.seller]={col:ACOLS[Object.keys(S.accounts).length%ACOLS.length]};
+      S.selAccs.push(p.seller);
     }
+    S.files.push({id:Date.now()+Math.random(),name:f.name,account:p.seller,sd:p.sd,ed:p.ed,rows:p.rows,hash,isDup:!!dup});
+    showAlert(`「${f.name}」を読み込みました（${p.seller} / ${p.rows.length}件）`,'ok');
   }
-  return { category: '未分類', franchise: '未分類' };
-}
-
-// ══ FILE HANDLING ══
-async function handleFiles(fileList) {
-  for (const file of fileList) { await processFile(file); }
-  renderAll();
-}
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('upload-zone').classList.remove('drag');
-  handleFiles(e.dataTransfer.files);
-}
-
-async function processFile(file) {
-  const text = await file.text();
-  const hash = hashStr(text.slice(0, 2000));
-
-  // Duplicate check: same hash
-  const dupHash = STATE.files.find(f => f.hash === hash);
-  if (dupHash) {
-    showAlert(`⚠️ 「${file.name}」は既にアップロード済みです（同一ファイル）`, 'warn');
-    return;
-  }
-
-  const parsed = parseCSV(text);
-  if (!parsed) { showAlert(`❌ 「${file.name}」はeBay CSVとして認識できませんでした`, 'err'); return; }
-
-  const { sellerName, startDate, endDate, rows } = parsed;
-
-  // Duplicate check: same account + period
-  const dupPeriod = STATE.files.find(f => f.account === sellerName && f.startDate === startDate && f.endDate === endDate);
-  if (dupPeriod) {
-    showAlert(`⚠️ アカウント「${sellerName}」の同期間データが既に存在します（${startDate} - ${endDate}）`, 'warn');
-  }
-
-  // Register account
-  if (!STATE.accounts[sellerName]) {
-    const color = ACCOUNT_COLORS[Object.keys(STATE.accounts).length % ACCOUNT_COLORS.length];
-    STATE.accounts[sellerName] = { name: sellerName, color };
-    if (!STATE.selectedAccounts.includes(sellerName)) STATE.selectedAccounts.push(sellerName);
-  }
-
-  const id = Date.now() + Math.random();
-  STATE.files.push({ id, name: file.name, account: sellerName, startDate, endDate, rows, hash, isDupPeriod: !!dupPeriod });
-  showAlert(`✅ 「${file.name}」を読み込みました（${sellerName} / ${rows.length}件）`, 'ok');
-}
-
-function removeFile(id) {
-  STATE.files = STATE.files.filter(f => f.id !== id);
   renderAll();
 }
 
-function showAlert(msg, type) {
-  const area = document.getElementById('alerts-area');
-  const div = document.createElement('div');
-  div.className = `alert alert-${type}`;
-  div.textContent = msg;
-  area.appendChild(div);
-  setTimeout(() => div.remove(), 6000);
+function showAlert(msg,type){
+  const a=document.getElementById('alerts');
+  if(!a)return;
+  const d=document.createElement('div');
+  d.className=`al a-${type}`;d.textContent=msg;
+  a.appendChild(d);setTimeout(()=>d.remove(),5000);
 }
 
-// ══ DATA AGGREGATION ══
-function getFilteredRows() {
-  const from = STATE.dateFrom ? new Date(STATE.dateFrom) : null;
-  const to = STATE.dateTo ? new Date(STATE.dateTo) : null;
+function removeFile(id){S.files=S.files.filter(f=>f.id!==id);renderAll();}
 
-  const rows = [];
-  for (const f of STATE.files) {
-    if (!STATE.selectedAccounts.includes(f.account)) continue;
-    for (const r of f.rows) {
-      if (from || to) {
-        // Parse "M D, YYYY" or "M DD, YYYY"
-        const ds = (r['Transaction creation date']||'').replace(/\s+/g,' ').trim();
-        if (ds && ds !== '--') {
-          // Format: "2 28, 2026" -> Feb 28 2026
-          const m = ds.match(/(\d+)\s+(\d+),\s+(\d+)/);
-          if (m) {
-            const dt = new Date(parseInt(m[3]), parseInt(m[1])-1, parseInt(m[2]));
-            if (from && dt < from) continue;
-            if (to && dt > to) continue;
-          }
-        }
+// ═══════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════
+function getRows(){
+  const from=S.dateFrom?new Date(S.dateFrom):null;
+  const to=S.dateTo?new Date(S.dateTo):null;
+  const rows=[];
+  for(const f of S.files){
+    if(!S.selAccs.includes(f.account))continue;
+    for(const r of f.rows){
+      if(from||to){
+        const dt=parseDate(r['Transaction creation date']);
+        if(dt){if(from&&dt<from)continue;if(to&&dt>to)continue;}
       }
-      rows.push({ ...r, _account: f.account });
+      rows.push({...r,_acc:f.account});
     }
   }
   return rows;
 }
 
-function calcSales(rows) {
-  let item_subtotal=0, shipping=0, ebay_tax=0, fvf=0, intl=0, store=0, promo=0, insert=0, refund=0, orders=0, refundCount=0;
-  for (const r of rows) {
-    const t = (r['Type']||'').trim();
-    if (t === 'Order') {
-      item_subtotal += toF(r['Item subtotal']);
-      shipping += toF(r['Shipping and handling']);
-      ebay_tax += toF(r['eBay collected tax']);
-      fvf += toF(r['Final Value Fee - fixed']) + toF(r['Final Value Fee - variable']);
-      intl += toF(r['International fee']);
-      if (r['Item title'] && r['Item title'] !== '--' && r['Transaction ID'] && r['Transaction ID'] !== '--') orders++;
-    } else if (t === 'Other fee') {
-      const desc = (r['Description']||'').trim();
-      const amt = toF(r['Net amount']);
-      if (desc.includes('Store')) store += amt;
-      else if (desc.includes('Promoted')) promo += amt;
-      else if (desc.includes('Insertion')) insert += amt;
-      else if (desc.includes('Final Value Fee')) fvf += amt;
-    } else if (t === 'Refund') {
-      refund += toF(r['Net amount']);
-      refundCount++;
-    }
+// ═══════════════════════════════════════
+//  CALCS
+// ═══════════════════════════════════════
+function calcSales(rows){
+  let sub=0,ship=0,tax=0,fvf=0,intl=0,store=0,promo=0,ins=0,ref=0,orders=0,refCnt=0;
+  for(const r of rows){
+    const t=(r['Type']||'').trim();
+    if(t==='Order'){
+      sub+=toF(r['Item subtotal']);ship+=toF(r['Shipping and handling']);
+      tax+=toF(r['eBay collected tax']);fvf+=toF(r['Final Value Fee - fixed'])+toF(r['Final Value Fee - variable']);
+      intl+=toF(r['International fee']);
+      if(r['Item title']&&r['Item title']!=='--'&&r['Transaction ID']&&r['Transaction ID']!=='--')orders++;
+    }else if(t==='Other fee'){
+      const desc=(r['Description']||'').trim(),amt=toF(r['Net amount']);
+      if(desc.includes('Store'))store+=amt;
+      else if(desc.includes('Promoted'))promo+=amt;
+      else if(desc.includes('Insertion'))ins+=amt;
+      else if(desc.includes('Final Value Fee'))fvf+=amt;
+    }else if(t==='Refund'){ref+=toF(r['Net amount']);refCnt++;}
   }
-  const totalFees = fvf + intl + store + promo + insert;
-  const profit = item_subtotal + shipping + totalFees + refund;
-  const totalRev = item_subtotal + shipping;
-  return { item_subtotal, shipping, ebay_tax, fvf, intl, store, promo, insert, refund, orders, refundCount, totalFees, profit, totalRev };
+  const fees=fvf+intl+store+promo+ins;
+  const rev=sub+ship;
+  return{sub,ship,tax,fvf,intl,store,promo,ins,ref,orders,refCnt,fees,rev,profit:rev+fees+ref};
 }
 
-function calcFranchises(rows) {
-  const map = {};
-  const orderRows = rows.filter(r => (r['Type']||'').trim() === 'Order' && r['Item title'] && r['Item title'] !== '--' && r['Transaction ID'] !== '--');
-  for (const r of orderRows) {
-    const { category, franchise } = getFranchise(r['Item title']);
-    const key = franchise;
-    if (!map[key]) map[key] = { count: 0, revenue: 0, category, items: [], types: {}, countries: {} };
-    map[key].count++;
-    map[key].revenue += toF(r['Item subtotal']);
-    map[key].items.push({ title: r['Item title'], price: toF(r['Item subtotal']), country: r['Ship to country'] });
-    const it = getItemType(r['Item title']);
-    map[key].types[it] = (map[key].types[it]||0) + 1;
-    const c = r['Ship to country'];
-    if (c && c !== '--') map[key].countries[c] = (map[key].countries[c]||0) + 1;
+function calcMonthly(rows){
+  const m={};
+  for(const r of rows){
+    const t=(r['Type']||'').trim();
+    const dt=parseDate(r['Transaction creation date']);
+    if(!dt)continue;
+    const key=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    if(!m[key])m[key]={sub:0,ship:0,fvf:0,intl:0,store:0,promo:0,ins:0,ref:0,orders:0};
+    if(t==='Order'){
+      m[key].sub+=toF(r['Item subtotal']);m[key].ship+=toF(r['Shipping and handling']);
+      m[key].fvf+=toF(r['Final Value Fee - fixed'])+toF(r['Final Value Fee - variable']);
+      m[key].intl+=toF(r['International fee']);
+      if(r['Item title']&&r['Item title']!=='--'&&r['Transaction ID']&&r['Transaction ID']!=='--')m[key].orders++;
+    }else if(t==='Other fee'){
+      const desc=(r['Description']||'').trim(),amt=toF(r['Net amount']);
+      if(desc.includes('Store'))m[key].store+=amt;
+      else if(desc.includes('Promoted'))m[key].promo+=amt;
+      else if(desc.includes('Insertion'))m[key].ins+=amt;
+      else if(desc.includes('Final Value Fee'))m[key].fvf+=amt;
+    }else if(t==='Refund')m[key].ref+=toF(r['Net amount']);
   }
-  return map;
+  return m;
 }
 
-function calcItemTypes(rows) {
-  const map = {};
-  for (const r of rows) {
-    if ((r['Type']||'').trim() !== 'Order') continue;
-    if (!r['Item title'] || r['Item title'] === '--') continue;
-    const it = getItemType(r['Item title']);
-    map[it] = (map[it]||0) + 1;
+function calcFranchises(rows){
+  const m={};
+  for(const r of rows){
+    if((r['Type']||'').trim()!=='Order')continue;
+    if(!r['Item title']||r['Item title']==='--'||!r['Transaction ID']||r['Transaction ID']==='--')continue;
+    const{cat,fr}=getFranchise(r['Item title']);
+    if(!m[fr])m[fr]={count:0,rev:0,cat,items:[],types:{},ctries:{}};
+    m[fr].count++;m[fr].rev+=toF(r['Item subtotal']);
+    m[fr].items.push({title:r['Item title'],price:toF(r['Item subtotal']),ctry:r['Ship to country']});
+    const it=getItemType(r['Item title']);m[fr].types[it]=(m[fr].types[it]||0)+1;
+    const c=(r['Ship to country']||'').trim();if(c&&c!=='--')m[fr].ctries[c]=(m[fr].ctries[c]||0)+1;
   }
-  return map;
+  return m;
 }
 
-function calcCountries(rows) {
-  const map = {};
-  for (const r of rows) {
-    if ((r['Type']||'').trim() !== 'Order') continue;
-    const c = (r['Ship to country']||'').trim();
-    if (c && c !== '--') map[c] = (map[c]||0) + 1;
+function calcTypes(rows){
+  const m={};
+  for(const r of rows){
+    if((r['Type']||'').trim()!=='Order'||!r['Item title']||r['Item title']==='--')continue;
+    const it=getItemType(r['Item title']);m[it]=(m[it]||0)+1;
   }
-  return map;
+  return m;
 }
 
-// ══ RENDER ══
-function fmt(n) { return '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2}); }
-function pct(a, b) { if (!b) return '—'; return (a/b*100).toFixed(1)+'%'; }
+function calcCtries(rows){
+  const m={};
+  for(const r of rows){
+    if((r['Type']||'').trim()!=='Order')continue;
+    const c=(r['Ship to country']||'').trim();if(c&&c!=='--')m[c]=(m[c]||0)+1;
+  }
+  return m;
+}
 
-function renderAll() {
-  renderAccountChips();
+function calcTiming(rows){
+  const dow=Array(7).fill(0),hour=Array(24).fill(0);
+  for(const r of rows){
+    if((r['Type']||'').trim()!=='Order')continue;
+    const dt=parseDate(r['Transaction creation date']);
+    if(dt){dow[dt.getDay()]++;hour[dt.getHours()]++;}
+  }
+  return{dow,hour};
+}
+
+function calcItems(rows){
+  const byTitle={};
+  for(const r of rows){
+    if((r['Type']||'').trim()!=='Order'||!r['Item title']||r['Item title']==='--'||!r['Transaction ID']||r['Transaction ID']==='--')continue;
+    const t=r['Item title'],p=toF(r['Item subtotal']);
+    if(!byTitle[t])byTitle[t]={title:t,count:0,totalRev:0,prices:[]};
+    byTitle[t].count++;byTitle[t].totalRev+=p;byTitle[t].prices.push(p);
+  }
+  return Object.values(byTitle).map(x=>({...x,avgPrice:x.totalRev/x.count}));
+}
+
+function calcBuyers(rows){
+  const m={};
+  for(const r of rows){
+    if((r['Type']||'').trim()!=='Order'||!r['Transaction ID']||r['Transaction ID']==='--')continue;
+    const name=(r['Buyer name']||'').trim(),user=(r['Buyer username']||'').trim();
+    if(!name&&!user)continue;
+    const key=name||user;
+    if(!m[key])m[key]={name:key,user,count:0,total:0,ctries:new Set()};
+    m[key].count++;m[key].total+=toF(r['Item subtotal']);
+    const c=(r['Ship to country']||'').trim();if(c&&c!=='--')m[key].ctries.add(c);
+  }
+  return Object.values(m).sort((a,b)=>b.count-a.count);
+}
+
+// ═══════════════════════════════════════
+//  CHART HELPER
+// ═══════════════════════════════════════
+function makeChart(id,config){
+  if(S.charts[id])S.charts[id].destroy();
+  const c=document.getElementById(id);
+  if(!c)return;
+  S.charts[id]=new Chart(c,{...config,options:{...config.options,responsive:true,maintainAspectRatio:false}});
+}
+
+// ═══════════════════════════════════════
+//  RENDER ALL
+// ═══════════════════════════════════════
+function renderAll(){
+  renderAccChips();
   renderAccBars();
   renderFileList();
-  const rows = getFilteredRows();
+  const rows=getRows();
   renderOverview(rows);
+  renderTrend(rows);
   renderProducts(rows);
+  renderTiming(rows);
+  renderRanking(rows);
+  renderBuyers(rows);
   renderCountries(rows);
-  renderKwPreview();
+  renderUnclassified(rows);
+  renderKwEditor();
+  renderKwPreview(rows);
 }
 
-function renderAccountChips() {
-  const el = document.getElementById('accountChips');
-  if (Object.keys(STATE.accounts).length === 0) {
-    el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:8px 0">CSVをアップロードすると<br>アカウントが表示されます</div>';
-    return;
+function renderAccChips(){
+  const el=document.getElementById('accChips');
+  const accs=Object.keys(S.accounts);
+  if(!accs.length){el.innerHTML='<div style="font-size:10px;color:var(--mu);line-height:1.5">CSVアップロード後<br>表示されます</div>';return;}
+  let h='';
+  const allSel=S.selAccs.length===accs.length;
+  h+=`<div class="chip ${allSel?'sel':''}" onclick="toggleAcc('__ALL__')" style="${allSel?'border-color:var(--acc);color:var(--acc);background:#f0c04010':''}"><div class="dot" style="${allSel?'background:var(--acc)':''}"></div>全アカウント</div>`;
+  for(const[id,a]of Object.entries(S.accounts)){
+    const s=S.selAccs.includes(id);
+    h+=`<div class="chip ${s?'sel':''}" onclick="toggleAcc('${id}')" style="${s?`border-color:${a.col}50;color:${a.col};background:${a.col}15`:''}"><div class="dot" style="${s?`background:${a.col}`:''}"></div>${id}</div>`;
   }
-  let html = '';
-  // All button
-  const allSel = STATE.selectedAccounts.length === Object.keys(STATE.accounts).length;
-  html += `<div class="chip ${allSel?'selected':''}" onclick="toggleAccount('__ALL__')" style="${allSel?'border-color:var(--accent);color:var(--accent)':''}">
-    <div class="chip-dot" style="${allSel?'background:var(--accent)':''}"></div>
-    <span class="chip-name">全アカウント</span>
-  </div>`;
-  for (const [id, acc] of Object.entries(STATE.accounts)) {
-    const sel = STATE.selectedAccounts.includes(id);
-    html += `<div class="chip ${sel?'selected':''}" onclick="toggleAccount('${id}')" style="${sel?`border-color:${acc.color};color:${acc.color};background:${acc.color}15`:''}">
-      <div class="chip-dot" style="${sel?`background:${acc.color}`:''}"></div>
-      <span class="chip-name">${id}</span>
-      <span class="chip-count">${STATE.files.filter(f=>f.account===id).length}件</span>
-    </div>`;
-  }
-  el.innerHTML = html;
+  el.innerHTML=h;
 }
 
-function toggleAccount(id) {
-  if (id === '__ALL__') {
-    if (STATE.selectedAccounts.length === Object.keys(STATE.accounts).length) {
-      STATE.selectedAccounts = [];
-    } else {
-      STATE.selectedAccounts = Object.keys(STATE.accounts);
-    }
-  } else {
-    const idx = STATE.selectedAccounts.indexOf(id);
-    if (idx >= 0) STATE.selectedAccounts.splice(idx, 1);
-    else STATE.selectedAccounts.push(id);
-  }
-  renderAll();
-}
-
-function renderAccBars() {
-  ['overview','products','countries'].forEach(p => {
-    const el = document.getElementById(`acc-bar-${p}`);
-    if (!el) return;
-    if (STATE.selectedAccounts.length === 0) { el.innerHTML = '<div class="alert alert-warn">アカウントが選択されていません</div>'; return; }
-    el.innerHTML = STATE.selectedAccounts.map(id => {
-      const acc = STATE.accounts[id];
-      if (!acc) return '';
-      return `<div class="acc-pill" style="color:${acc.color};border-color:${acc.color}40;background:${acc.color}12">
-        <span>●</span>${id}
-      </div>`;
+function renderAccBars(){
+  ['overview','trend','products','timing','ranking','buyers','countries','unclassified'].forEach(p=>{
+    const el=document.getElementById(`ab-${p}`);if(!el)return;
+    if(!S.selAccs.length){el.innerHTML='<div class="al a-wn">アカウントが選択されていません</div>';return;}
+    el.innerHTML=S.selAccs.map(id=>{
+      const a=S.accounts[id];if(!a)return'';
+      return`<div class="apill" style="color:${a.col};border-color:${a.col}40;background:${a.col}12">●&nbsp;${id}</div>`;
     }).join('');
   });
 }
 
-function renderOverview(rows) {
-  const s = calcSales(rows);
-  const set = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-
-  set('kpi-subtotal', fmt(s.item_subtotal));
-  set('kpi-shipping', fmt(s.shipping));
-  set('kpi-costs', '-'+fmt(Math.abs(s.totalFees)+Math.abs(s.refund)));
-  set('kpi-profit', fmt(s.profit));
-  set('kpi-margin', `利益率 ${pct(s.profit, s.totalRev)}`);
-  set('big-profit', fmt(s.profit));
-  set('big-margin', pct(s.profit, s.totalRev));
-  set('big-adrate', pct(Math.abs(s.promo), s.totalRev));
-  set('kpi-orders', s.orders.toLocaleString());
-  set('kpi-refunds', s.refundCount.toLocaleString());
-  set('kpi-refund-rate', `返金率 ${pct(s.refundCount, s.orders)}`);
-  set('kpi-avg', s.orders ? fmt(s.totalRev/s.orders) : '—');
-  set('kpi-tax', fmt(s.ebay_tax));
-
-  // Breakdown
-  const bd = document.getElementById('breakdown-content');
-  if (s.totalRev === 0 && s.totalFees === 0) {
-    bd.innerHTML = '<div class="empty" style="padding:24px 0"><div class="empty-icon">📂</div><div class="empty-desc">CSVをアップロードしてください</div></div>';
-  } else {
-    bd.innerHTML = `
-      <div class="brow-cat">売上</div>
-      <div class="brow"><span class="brow-lbl">商品売上</span><span class="brow-val c-green">+${fmt(s.item_subtotal)}</span></div>
-      <div class="brow"><span class="brow-lbl">送料収入</span><span class="brow-val c-green">+${fmt(s.shipping)}</span></div>
-      <div class="brow" style="font-weight:700"><span class="brow-lbl" style="color:var(--text)">売上合計</span><span class="brow-val c-green">+${fmt(s.totalRev)}</span></div>
-      <div class="brow-cat">手数料・コスト</div>
-      <div class="brow"><span class="brow-lbl">Final Value Fee</span><span class="brow-val c-red">${s.fvf<0?'-':''}${fmt(s.fvf)}</span></div>
-      <div class="brow"><span class="brow-lbl">国際手数料</span><span class="brow-val c-red">${s.intl<0?'-':''}${fmt(s.intl)}</span></div>
-      <div class="brow"><span class="brow-lbl">ストア月額費用</span><span class="brow-val c-red">${s.store<0?'-':''}${fmt(s.store)}</span></div>
-      <div class="brow"><span class="brow-lbl">広告費（Promoted）</span><span class="brow-val c-red">${s.promo<0?'-':''}${fmt(s.promo)}</span></div>
-      <div class="brow"><span class="brow-lbl">Insertion Fee</span><span class="brow-val c-red">${s.insert<0?'-':''}${fmt(s.insert)}</span></div>
-      <div class="brow" style="font-weight:700"><span class="brow-lbl" style="color:var(--text)">手数料合計</span><span class="brow-val c-red">-${fmt(Math.abs(s.totalFees))}</span></div>
-      <div class="brow-cat">その他</div>
-      <div class="brow"><span class="brow-lbl">返金（Refund）</span><span class="brow-val c-red">${s.refund<0?'-':''}${fmt(s.refund)}</span></div>
-      <div class="brow"><span class="brow-lbl">eBay税収（参考）</span><span class="brow-val" style="color:var(--muted2)">${fmt(s.ebay_tax)}</span></div>
-      <div style="margin-top:14px;padding-top:14px;border-top:2px solid var(--accent);display:flex;justify-content:space-between;align-items:center">
-        <span style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:13px">純利益</span>
-        <span style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:18px;color:var(--green)">+${fmt(s.profit)}</span>
-      </div>`;
-  }
-
-  // Fee donut
-  if (STATE.feeDonutChart) STATE.feeDonutChart.destroy();
-  const ctx = document.getElementById('feeDonut');
-  if (ctx) {
-    STATE.feeDonutChart = new Chart(ctx, {
-      type:'doughnut',
-      data:{
-        labels:['FVF手数料','広告費','ストア費','国際手数料','返金'],
-        datasets:[{
-          data:[Math.abs(s.fvf),Math.abs(s.promo),Math.abs(s.store),Math.abs(s.intl),Math.abs(s.refund)],
-          backgroundColor:COLORS.slice(0,5).map(c=>c+'cc'),
-          borderColor:COLORS.slice(0,5),borderWidth:1,
-        }]
-      },
-      options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-        plugins:{legend:{position:'bottom',labels:{color:'#5a6280',font:{family:'DM Mono',size:9},padding:8,boxWidth:10}}}}
-    });
-  }
+function toggleAcc(id){
+  if(id==='__ALL__'){S.selAccs=S.selAccs.length===Object.keys(S.accounts).length?[]:Object.keys(S.accounts);}
+  else{const i=S.selAccs.indexOf(id);i>=0?S.selAccs.splice(i,1):S.selAccs.push(id);}
+  renderAll();
 }
 
-function renderProducts(rows) {
-  if (!rows) rows = getFilteredRows();
-  const mode = document.getElementById('cat-type-sel')?.value || 'franchise';
-  const franchises = calcFranchises(rows);
-  const itemTypes = calcItemTypes(rows);
+// ── OVERVIEW ──
+function renderOverview(rows){
+  const s=calcSales(rows);
+  set('k-sub',fmt(s.sub));set('k-ship',fmt(s.ship));
+  set('k-cost','-'+fmt(Math.abs(s.fees)+Math.abs(s.ref)));
+  set('k-profit',fmt(s.profit));set('k-mg','利益率 '+pct(s.profit,s.rev));
+  set('big-p',fmt(s.profit));set('big-mg',pct(s.profit,s.rev));
+  set('big-ad',pct(Math.abs(s.promo),s.rev));
+  set('k-ord',s.orders.toLocaleString());set('k-ref',s.refCnt.toLocaleString());
+  set('k-rr','返金率 '+pct(s.refCnt,s.orders));
+  set('k-avg',s.orders?fmt(s.rev/s.orders):'—');set('k-tax',fmt(s.tax));
 
-  // BAR LIST
-  const barEl = document.getElementById('cat-bar-list');
-  if (!barEl) return;
+  const bd=document.getElementById('bkd');
+  if(!s.rev&&!s.fees){bd.innerHTML='<div class="emp"><div class="ei">📂</div><div class="ed">CSVをアップロードしてください</div></div>';return;}
+  bd.innerHTML=`
+    <div class="bc">売上</div>
+    <div class="br"><span class="bl">商品売上</span><span class="bv c-gr">+${fmt(s.sub)}</span></div>
+    <div class="br"><span class="bl">送料収入</span><span class="bv c-gr">+${fmt(s.ship)}</span></div>
+    <div class="br" style="font-weight:500"><span class="bl" style="color:var(--tx)">売上合計</span><span class="bv c-gr">+${fmt(s.rev)}</span></div>
+    <div class="bc">手数料</div>
+    <div class="br"><span class="bl">Final Value Fee</span><span class="bv c-rd">${s.fvf<0?'-':''}${fmt(s.fvf)}</span></div>
+    <div class="br"><span class="bl">国際手数料</span><span class="bv c-rd">${s.intl<0?'-':''}${fmt(s.intl)}</span></div>
+    <div class="br"><span class="bl">ストア月額</span><span class="bv c-rd">${s.store<0?'-':''}${fmt(s.store)}</span></div>
+    <div class="br"><span class="bl">広告費(Promoted)</span><span class="bv c-rd">${s.promo<0?'-':''}${fmt(s.promo)}</span></div>
+    <div class="bc">その他</div>
+    <div class="br"><span class="bl">返金</span><span class="bv c-rd">${s.ref<0?'-':''}${fmt(s.ref)}</span></div>
+    <div class="br"><span class="bl">eBay徴収税(参考)</span><span class="bv" style="color:var(--mu2)">${fmt(s.tax)}</span></div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--acc);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:11px;font-weight:500">純利益</span>
+      <span style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--gr)">+${fmt(s.profit)}</span>
+    </div>`;
 
-  if (mode === 'franchise') {
-    const entries = Object.entries(franchises).sort((a,b)=>b[1].count-a[1].count).slice(0,20);
-    const maxV = entries[0]?.[1]?.count || 1;
-    barEl.innerHTML = entries.map(([name, d], i) => `
-      <div class="bar-item">
-        <div class="bar-meta" onclick="openDrill('${name.replace(/'/g,"\\'")}')">
-          <span class="bar-name" title="${name}" style="color:${COLORS[i%COLORS.length]}">${name}</span>
-          <span class="bar-cnt">${d.count}件 <span style="color:var(--muted);font-size:9px">▶ 詳細</span></span>
-        </div>
-        <div class="bar-track"><div class="bar-fill" style="width:${d.count/maxV*100}%;background:${COLORS[i%COLORS.length]}"></div></div>
-      </div>`).join('') || '<div class="empty" style="padding:24px 0"><div class="empty-desc">データがありません</div></div>';
-
-    // Stats
-    const allOrderItems = rows.filter(r => (r['Type']||'').trim()==='Order' && r['Item title'] && r['Item title']!=='--' && r['Transaction ID']!=='--');
-    const matched = allOrderItems.filter(r => getFranchise(r['Item title']).franchise !== '未分類').length;
-    const s = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-    s('stat-matched', matched);
-    s('stat-unmatched', allOrderItems.length - matched);
-    s('stat-total', allOrderItems.length);
-  } else {
-    const entries = Object.entries(itemTypes).sort((a,b)=>b[1]-a[1]);
-    const maxV = entries[0]?.[1] || 1;
-    barEl.innerHTML = entries.map(([name, cnt], i) => `
-      <div class="bar-item">
-        <div class="bar-meta">
-          <span class="bar-name" style="color:${COLORS[i%COLORS.length]}">${name}</span>
-          <span class="bar-cnt">${cnt}件</span>
-        </div>
-        <div class="bar-track"><div class="bar-fill" style="width:${cnt/maxV*100}%;background:${COLORS[i%COLORS.length]}"></div></div>
-      </div>`).join('') || '<div class="empty" style="padding:24px 0"><div class="empty-desc">データがありません</div></div>';
-  }
-
-  // Type donut
-  if (STATE.typeDonutChart) STATE.typeDonutChart.destroy();
-  const tc = document.getElementById('typeDonut');
-  if (tc) {
-    const top = Object.entries(itemTypes).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    STATE.typeDonutChart = new Chart(tc, {
-      type:'doughnut',
-      data:{
-        labels:top.map(([k])=>k),
-        datasets:[{data:top.map(([,v])=>v),backgroundColor:COLORS.slice(0,8).map(c=>c+'cc'),borderColor:COLORS.slice(0,8),borderWidth:1}]
-      },
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        plugins:{legend:{position:'bottom',labels:{color:'#5a6280',font:{family:'DM Mono',size:9},padding:6,boxWidth:10}}}}
-    });
-  }
+  makeChart('c-fee',{type:'doughnut',data:{
+    labels:['FVF','広告費','ストア費','国際手数料','返金'],
+    datasets:[{data:[Math.abs(s.fvf),Math.abs(s.promo),Math.abs(s.store),Math.abs(s.intl),Math.abs(s.ref)],
+      backgroundColor:COLS.slice(0,5).map(c=>c+'bb'),borderColor:COLS.slice(0,5),borderWidth:1}]},
+    options:{cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:5,boxWidth:9,color:'var(--mu2)'}}}}
+  });
 }
 
-function renderCountries(rows) {
-  if (!rows) rows = getFilteredRows();
-  const countries = calcCountries(rows);
-  const total = Object.values(countries).reduce((s,v)=>s+v,0);
-  const entries = Object.entries(countries).sort((a,b)=>b[1]-a[1]);
-
-  // List
-  const el = document.getElementById('country-list-el');
-  if (el) {
-    el.innerHTML = entries.map(([code, cnt], i) => {
-      const flag = FLAGS[code]||'🌍';
-      const name = COUNTRY_NAMES[code]||code;
-      const p = total ? cnt/total*100 : 0;
-      return `<div class="crow">
-        <span class="cflag">${flag}</span>
-        <span class="cname">${name}</span>
-        <div class="ctrack"><div class="cfill" style="width:${p}%;background:${COLORS[i%COLORS.length]}"></div></div>
-        <span class="cpct">${p.toFixed(1)}%</span>
-        <span class="ccnt">${cnt}件</span>
-      </div>`;
-    }).join('') || '<div class="empty" style="padding:24px 0"><div class="empty-desc">データなし</div></div>';
-  }
-
-  // Stats
-  const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  if (entries.length > 0) {
-    const top = entries[0];
-    set('top-country', (FLAGS[top[0]]||'')+ ' '+(COUNTRY_NAMES[top[0]]||top[0]));
-    set('top-country-pct', pct(top[1],total)+' のシェア');
-  }
-  const engCodes = ['US','CA','GB','AU'];
-  const engTotal = engCodes.reduce((s,c)=>s+(countries[c]||0),0);
-  set('eng-share', pct(engTotal, total));
-  set('country-count', entries.length+'カ国');
-
-  // Donut
-  if (STATE.countryDonutChart) STATE.countryDonutChart.destroy();
-  const cc = document.getElementById('countryDonut');
-  if (cc) {
-    const top8 = entries.slice(0,7);
-    const rest = entries.slice(7).reduce((s,[,v])=>s+v,0);
-    const labels = top8.map(([c])=>(FLAGS[c]||'🌍')+' '+(COUNTRY_NAMES[c]||c));
-    const data = top8.map(([,v])=>v);
-    if (rest>0) { labels.push('その他'); data.push(rest); }
-    STATE.countryDonutChart = new Chart(cc, {
-      type:'doughnut',
-      data:{labels,datasets:[{data,backgroundColor:COLORS.slice(0,labels.length).map(c=>c+'cc'),borderColor:COLORS.slice(0,labels.length),borderWidth:1}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        plugins:{legend:{position:'bottom',labels:{color:'#5a6280',font:{family:'DM Mono',size:9},padding:6,boxWidth:10}}}}
-    });
-  }
-}
-
-// ══ DRILLDOWN ══
-function openDrill(franchiseName) {
-  const rows = getFilteredRows();
-  const franchises = calcFranchises(rows);
-  const d = franchises[franchiseName];
-  if (!d) return;
-
-  document.getElementById('drill-title').textContent = franchiseName;
-  document.getElementById('drill-sub').textContent = `カテゴリ: ${d.category}`;
-  document.getElementById('drill-count').textContent = d.count+'件';
-  document.getElementById('drill-revenue').textContent = fmt(d.revenue);
-
-  // Types
-  const typeEl = document.getElementById('drill-types');
-  const typeEntries = Object.entries(d.types).sort((a,b)=>b[1]-a[1]);
-  const maxT = typeEntries[0]?.[1]||1;
-  typeEl.innerHTML = typeEntries.map(([name,cnt],i)=>`
-    <div class="bar-item" style="margin-bottom:8px">
-      <div class="bar-meta"><span class="bar-name" style="color:${COLORS[i%COLORS.length]}">${name}</span><span class="bar-cnt">${cnt}件</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${cnt/maxT*100}%;background:${COLORS[i%COLORS.length]}"></div></div>
-    </div>`).join('');
-
-  // Countries
-  const ctryEl = document.getElementById('drill-countries');
-  const ctryEntries = Object.entries(d.countries).sort((a,b)=>b[1]-a[1]);
-  const totalC = ctryEntries.reduce((s,[,v])=>s+v,0);
-  ctryEl.innerHTML = ctryEntries.map(([code,cnt],i)=>`
-    <div class="crow" style="margin-bottom:7px">
-      <span class="cflag" style="font-size:14px;width:20px">${FLAGS[code]||'🌍'}</span>
-      <span class="cname" style="width:80px;font-size:11px">${COUNTRY_NAMES[code]||code}</span>
-      <div class="ctrack" style="height:5px"><div class="cfill" style="width:${totalC?cnt/totalC*100:0}%;background:${COLORS[i%COLORS.length]}"></div></div>
-      <span class="cpct" style="font-size:10px">${totalC?pct(cnt,totalC):'—'}</span>
-    </div>`).join('');
-
-  // Items list
-  const itemsEl = document.getElementById('drill-items');
-  itemsEl.innerHTML = d.items.slice(0,20).map(item=>`
-    <div class="drill-item">
-      <div style="flex:1">
-        <div class="drill-item-title">${item.title}</div>
-        <div class="drill-item-meta">${FLAGS[item.country]||'🌍'} ${COUNTRY_NAMES[item.country]||item.country||'—'}</div>
-      </div>
-      <div class="drill-item-price">${fmt(item.price)}</div>
-    </div>`).join('');
-  if (d.items.length > 20) itemsEl.innerHTML += `<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px">他 ${d.items.length-20}件</div>`;
-
-  document.getElementById('drilldown').classList.add('open');
-}
-function closeDrill() { document.getElementById('drilldown').classList.remove('open'); }
-
-// ══ FILE LIST ══
-function renderFileList() {
-  const el = document.getElementById('file-list-el');
-  const badge = document.getElementById('file-count-badge');
-  if (badge) badge.textContent = STATE.files.length+'件';
-
-  if (STATE.files.length === 0) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📂</div><div class="empty-title">まだファイルがありません</div><div class="empty-desc">eBay取引レポートCSVをアップロードしてください</div></div>';
+// ── TREND ──
+function renderTrend(rows){
+  const monthly=calcMonthly(rows);
+  const keys=Object.keys(monthly).sort();
+  if(!keys.length){
+    makeChart('c-trend',{type:'bar',data:{labels:[],datasets:[]},options:{}});
+    ['tr-best','tr-worst','tr-avg'].forEach(id=>set(id,'—'));
     return;
   }
-  el.innerHTML = STATE.files.map(f => {
-    const acc = STATE.accounts[f.account];
-    const badge = f.isDupPeriod
-      ? '<span class="file-badge warn">⚠ 期間重複</span>'
-      : '<span class="file-badge ok">✓ 正常</span>';
-    return `<div class="file-item">
-      <span class="file-icon">📄</span>
-      <div class="file-info">
-        <div class="file-name">${f.name}</div>
-        <div class="file-meta">${f.startDate} 〜 ${f.endDate} / ${f.rows.length}件のレコード</div>
-        <div class="file-account" style="color:${acc?.color||'var(--accent)'}">● ${f.account}</div>
-      </div>
-      ${badge}
-      <button class="file-del" onclick="removeFile(${f.id})" title="削除">✕</button>
-    </div>`;
+  const mode=S.trendMode;
+  const vals=keys.map(k=>{
+    const m=monthly[k];
+    const rev=m.sub+m.ship;
+    const fees=m.fvf+m.intl+m.store+m.promo+m.ins;
+    const profit=rev+fees+m.ref;
+    if(mode==='revenue')return rev;
+    if(mode==='profit')return profit;
+    return m.orders;
+  });
+  const labels=keys.map(k=>k.replace('-','年')+('月'));
+  const colors=vals.map(v=>v>=0?'#34d47acc':'#f05060cc');
+  const borderColors=vals.map(v=>v>=0?'#34d47a':'#f05060');
+
+  makeChart('c-trend',{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:colors,borderColor:borderColors,borderWidth:1,borderRadius:4}]},
+    options:{plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}},
+               y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10},callback:v=>mode==='orders'?v:'$'+Math.round(v/1000)+'k'}}}}
+  });
+
+  const maxIdx=vals.indexOf(Math.max(...vals));
+  const minIdx=vals.indexOf(Math.min(...vals));
+  set('tr-best',labels[maxIdx]||'—');
+  set('tr-best-v',mode==='orders'?vals[maxIdx]+'件':fmt(vals[maxIdx]));
+  set('tr-worst',labels[minIdx]||'—');
+  set('tr-worst-v',mode==='orders'?vals[minIdx]+'件':fmt(vals[minIdx]));
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  set('tr-avg',mode==='orders'?Math.round(avg)+'件':fmt(avg));
+}
+
+function setTrendMode(m,el){
+  S.trendMode=m;
+  document.querySelectorAll('#p-trend .tab').forEach(t=>t.classList.remove('sel'));
+  el.classList.add('sel');
+  renderTrend(getRows());
+}
+
+// ── PRODUCTS ──
+function renderProducts(rows){
+  if(!rows)rows=getRows();
+  const mode=document.getElementById('cat-sel')?.value||'franchise';
+  const frs=calcFranchises(rows);
+  const types=calcTypes(rows);
+  const allItems=rows.filter(r=>(r['Type']||'').trim()==='Order'&&r['Item title']&&r['Item title']!=='--'&&r['Transaction ID']&&r['Transaction ID']!=='--');
+  const matched=allItems.filter(r=>getFranchise(r['Item title']).fr!=='未分類').length;
+  set('s-m',matched);set('s-u',allItems.length-matched);set('s-t',allItems.length);
+
+  if(mode==='franchise'){
+    const entries=Object.entries(frs).filter(([k])=>k!=='未分類').sort((a,b)=>b[1].count-a[1].count).slice(0,25);
+    const maxV=entries[0]?.[1]?.count||1;
+    document.getElementById('cat-bars').innerHTML=entries.length?entries.map(([nm,d],i)=>`
+      <div class="bi"><div class="bm">
+        <span class="bn" onclick="openDrill('${nm.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" style="color:${COLS[i%COLS.length]}">▶ ${nm}</span>
+        <span class="bct">${d.count}件</span>
+      </div><div class="bt"><div class="bf" style="width:${d.count/maxV*100}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('')
+      :'<div class="emp"><div class="ed">データなし</div></div>';
+  }else{
+    const entries=Object.entries(types).sort((a,b)=>b[1]-a[1]);
+    const maxV=entries[0]?.[1]||1;
+    document.getElementById('cat-bars').innerHTML=entries.length?entries.map(([nm,cnt],i)=>`
+      <div class="bi"><div class="bm"><span style="font-size:11px;color:${COLS[i%COLS.length]}">${nm}</span><span class="bct">${cnt}件</span></div>
+      <div class="bt"><div class="bf" style="width:${cnt/maxV*100}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('')
+      :'<div class="emp"><div class="ed">データなし</div></div>';
+  }
+
+  const top8=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  makeChart('c-type',{type:'doughnut',data:{labels:top8.map(([k])=>k),datasets:[{data:top8.map(([,v])=>v),backgroundColor:COLS.slice(0,8).map(c=>c+'bb'),borderColor:COLS.slice(0,8),borderWidth:1}]},
+    options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:4,boxWidth:9,color:'var(--mu2)'}}}}
+  });
+}
+
+// ── TIMING ──
+function renderTiming(rows){
+  const{dow,hour}=calcTiming(rows);
+  const dowLabels=DAYS;
+  const hourLabels=Array.from({length:24},(_,i)=>i+'時');
+
+  makeChart('c-dow',{type:'bar',data:{labels:dowLabels,datasets:[{data:dow,backgroundColor:dow.map((_,i)=>i===0||i===6?'#e8457acc':'#6a7fffcc'),borderColor:dow.map((_,i)=>i===0||i===6?'#e8457a':'#6a7fff'),borderWidth:1,borderRadius:4}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}},y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}}}}
+  });
+  makeChart('c-hour',{type:'bar',data:{labels:hourLabels,datasets:[{data:hour,backgroundColor:'#38e8b0bb',borderColor:'#38e8b0',borderWidth:1,borderRadius:3}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:9}}},y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}}}}
+  });
+
+  const bestDowIdx=dow.indexOf(Math.max(...dow));
+  const bestHourIdx=hour.indexOf(Math.max(...hour));
+  set('t-bestday',DAYS[bestDowIdx]+'曜日');set('t-bestday-v',dow[bestDowIdx]+'件');
+  set('t-besthour',bestHourIdx+'〜'+(bestHourIdx+1)+'時');set('t-besthour-v',hour[bestHourIdx]+'件');
+  const wkend=dow[0]+dow[6],wkday=dow.slice(1,6).reduce((a,b)=>a+b,0);
+  set('t-wkratio',wkday?((wkend/wkday)*100).toFixed(0)+'%':'—');
+}
+
+// ── RANKING ──
+function renderRanking(rows){
+  const items=calcItems(rows);
+  const byAvg=[...items].sort((a,b)=>b.avgPrice-a.avgPrice).slice(0,20);
+  const byRev=[...items].sort((a,b)=>b.totalRev-a.totalRev).slice(0,20);
+  const maxA=byAvg[0]?.avgPrice||1;
+  const maxR=byRev[0]?.totalRev||1;
+
+  const renderList=(el,list,valFn,colorFn)=>{
+    document.getElementById(el).innerHTML=list.length?list.map((x,i)=>`
+      <div class="bi"><div class="bm">
+        <span class="bn" style="color:${COLS[i%COLS.length]};font-size:10px">${x.title.substring(0,55)}${x.title.length>55?'…':''}</span>
+        <span class="bct">${valFn(x)}</span>
+      </div><div class="bt"><div class="bf" style="width:${colorFn(x)}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('')
+      :'<div class="emp"><div class="ed">データなし</div></div>';
+  };
+
+  renderList('rank-high',byAvg,x=>`${fmt(x.avgPrice)} / ${x.count}件`,x=>x.avgPrice/maxA*100);
+  renderList('rank-revenue',byRev,x=>`${fmt(x.totalRev)} (${x.count}件)`,x=>x.totalRev/maxR*100);
+}
+
+// ── BUYERS ──
+function renderBuyers(rows){
+  const buyers=calcBuyers(rows);
+  const repeaters=buyers.filter(b=>b.count>=2);
+  const uniq=buyers.length;
+  set('b-uniq',uniq.toLocaleString());
+  set('b-rep',repeaters.length.toLocaleString());
+  set('b-rep-r','全体の'+pct(repeaters.length,uniq));
+  if(buyers[0]){set('b-top',buyers[0].name);set('b-top-v',buyers[0].count+'回 / '+fmt(buyers[0].total));}
+
+  const el=document.getElementById('buyer-list');
+  if(!repeaters.length){el.innerHTML='<div class="emp"><div class="ed">リピーターなし</div></div>';return;}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+    ${repeaters.slice(0,30).map((b,i)=>`
+      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px">
+        <div style="font-size:11px;color:${COLS[i%COLS.length]};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</div>
+        <div style="font-size:9px;color:var(--mu);margin-top:2px">${b.count}回購入 / ${fmt(b.total)}</div>
+        <div style="font-size:9px;color:var(--mu)">@${b.user}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+// ── COUNTRIES ──
+function renderCountries(rows){
+  const ctries=calcCtries(rows);
+  const total=Object.values(ctries).reduce((s,v)=>s+v,0);
+  const entries=Object.entries(ctries).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('ctry-list').innerHTML=entries.length?entries.map(([c,cnt],i)=>`
+    <div class="cr"><span class="cf">${FLAGS[c]||'🌍'}</span><span class="cn">${CNAME[c]||c}</span>
+    <div class="ct2"><div class="cfi" style="width:${total?cnt/total*100:0}%;background:${COLS[i%COLS.length]}"></div></div>
+    <span class="cp">${pct(cnt,total)}</span><span class="cc">${cnt}件</span></div>`).join('')
+    :'<div class="emp"><div class="ed">データなし</div></div>';
+
+  if(entries.length){
+    set('tc',(FLAGS[entries[0][0]]||'')+(CNAME[entries[0][0]]||entries[0][0]));
+    set('tc-p',pct(entries[0][1],total)+' のシェア');
+  }
+  const eng=['US','CA','GB','AU'].reduce((s,c)=>s+(ctries[c]||0),0);
+  set('eng-s',pct(eng,total));set('ctry-n',entries.length+'カ国');
+
+  const top7=entries.slice(0,7);
+  const rest=entries.slice(7).reduce((s,[,v])=>s+v,0);
+  const lbs=top7.map(([c])=>CNAME[c]||c);
+  const dat=top7.map(([,v])=>v);
+  if(rest>0){lbs.push('その他');dat.push(rest);}
+  makeChart('c-ctry',{type:'doughnut',data:{labels:lbs,datasets:[{data:dat,backgroundColor:COLS.slice(0,lbs.length).map(c=>c+'bb'),borderColor:COLS.slice(0,lbs.length),borderWidth:1}]},
+    options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:5,boxWidth:9,color:'var(--mu2)'}}}}
+  });
+}
+
+// ── UNCLASSIFIED ──
+function renderUnclassified(rows){
+  if(!rows)rows=getRows();
+  const items=rows.filter(r=>(r['Type']||'').trim()==='Order'&&r['Item title']&&r['Item title']!=='--'&&r['Transaction ID']&&r['Transaction ID']!=='--');
+  const unmatched=[...new Set(items.filter(r=>getFranchise(r['Item title']).fr==='未分類').map(r=>r['Item title']))];
+  const el=document.getElementById('ua-list');
+  if(!unmatched.length){el.innerHTML='<div class="emp"><div class="ei">✅</div><div class="et">全商品が識別済みです！</div></div>';return;}
+
+  // Build franchise options
+  const allFr=['（スキップ）',...Object.entries(S.kw).flatMap(([cat,frs])=>Object.keys(frs).map(f=>`${f} (${cat})`))];
+
+  el.innerHTML=`<div style="font-size:10px;color:var(--mu);margin-bottom:8px">${unmatched.length}件が未分類です。フランチャイズを選んで「割当」を押してください。</div>`
+    +unmatched.slice(0,50).map((title,i)=>`
+    <div class="ua-item">
+      <span class="ua-title" title="${title}">${title.substring(0,70)}${title.length>70?'…':''}</span>
+      <select class="ua-sel" id="ua-sel-${i}">${allFr.map(f=>`<option value="${f}">${f}</option>`).join('')}</select>
+      <button class="ua-btn" onclick="assignFranchise('${title.replace(/'/g,"\\'").replace(/"/g,'&quot;')}',${i})">割当</button>
+    </div>`).join('');
+  if(unmatched.length>50)el.innerHTML+=`<div style="font-size:10px;color:var(--mu);text-align:center;padding:10px">他 ${unmatched.length-50}件</div>`;
+}
+
+function assignFranchise(title,idx){
+  const sel=document.getElementById(`ua-sel-${idx}`);
+  if(!sel)return;
+  const val=sel.value;
+  if(val==='（スキップ）')return;
+  const fr=val.replace(/\s*\([^)]+\)$/,'').trim();
+  S.manualAssign[title]=fr;
+  showAlert(`「${title.substring(0,30)}…」を「${fr}」に割り当てました`,'ok');
+  renderAll();
+}
+
+// ── FILES ──
+function renderFileList(){
+  const el=document.getElementById('flist');
+  set('fcnt',S.files.length+'件');
+  if(!S.files.length){el.innerHTML='<div class="emp"><div class="ei">📂</div><div class="et">ファイルなし</div><div class="ed">CSVをアップロードしてください</div></div>';return;}
+  el.innerHTML=S.files.map(f=>{
+    const a=S.accounts[f.account];
+    const badge=f.isDup?'<span class="fbg b-wn">⚠ 期間重複</span>':'<span class="fbg b-ok">✓ 正常</span>';
+    return`<div class="fi"><span style="font-size:18px">📄</span>
+      <div style="flex:1"><div class="fn">${f.name}</div><div class="fm">${f.sd}〜${f.ed} / ${f.rows.length}件</div><div class="fa" style="color:${a?.col||'var(--acc)'}">● ${f.account}</div></div>
+      ${badge}<button class="fdl" onclick="removeFile(${f.id})">✕</button></div>`;
   }).join('');
 }
 
-// ══ KEYWORD EDITOR ══
-function renderKwEditor() {
-  const catList = document.getElementById('kw-cat-list');
-  catList.innerHTML = Object.keys(STATE.keywords).map(cat => `
-    <div class="kw-cat ${cat===STATE.selectedKwCat?'active':''}" onclick="selectKwCat('${cat}')">
-      ${cat}
-      <span style="font-size:9px;color:var(--muted)">${Object.keys(STATE.keywords[cat]).length}</span>
+// ── KEYWORDS ──
+function renderKwEditor(){
+  const cats=Object.keys(S.kw);
+  document.getElementById('kw-cats').innerHTML=cats.map(c=>`<div class="kwcat${c===S.selKwCat?' sel':''}" onclick="selCat('${c}')">${c} <span style="color:var(--mu);font-size:9px">${Object.keys(S.kw[c]).length}</span></div>`).join('');
+  if(!S.selKwCat){document.getElementById('kw-tags').innerHTML='';document.getElementById('kw-add-row').style.display='none';return;}
+  set('kw-sel-lbl',`「${S.selKwCat}」のフランチャイズ`);
+  document.getElementById('kw-add-row').style.display='flex';
+  const frs=Object.keys(S.kw[S.selKwCat]);
+  document.getElementById('kw-tags').innerHTML=frs.length
+    ?frs.map(f=>`<div class="kwtag">${f}<button class="kwd" onclick="removeKw('${S.selKwCat.replace(/'/g,"\\'")}','${f.replace(/'/g,"\\'")}')">×</button></div>`).join('')
+    :'<span style="font-size:10px;color:var(--mu)">まだありません</span>';
+}
+
+function renderKwPreview(rows){
+  if(!rows)rows=getRows();
+  const items=rows.filter(r=>(r['Type']||'').trim()==='Order'&&r['Item title']&&r['Item title']!=='--'&&r['Transaction ID']&&r['Transaction ID']!=='--');
+  const unmatched=items.filter(r=>getFranchise(r['Item title']).fr==='未分類').slice(0,15);
+  const el=document.getElementById('kw-prev');if(!el)return;
+  if(!items.length){el.innerHTML='<div class="emp"><div class="ed">CSVをアップロードしてください</div></div>';return;}
+  if(!unmatched.length){el.innerHTML='<div class="al a-ok" style="margin:0">全商品が識別済みです 🎉</div>';return;}
+  el.innerHTML=`<div style="font-size:10px;color:var(--mu);margin-bottom:6px">未分類 ${unmatched.length}件（表示）</div>`
+    +unmatched.map(r=>`<div style="font-size:10px;padding:5px 0;border-bottom:1px solid var(--bd);color:var(--mu2)">${r['Item title']}</div>`).join('');
+}
+
+function selCat(c){S.selKwCat=c;renderKwEditor();}
+function addCat(){const v=document.getElementById('new-cat').value.trim();if(!v||S.kw[v])return;S.kw[v]={};document.getElementById('new-cat').value='';S.selKwCat=v;renderKwEditor();}
+function addKw(){const v=document.getElementById('new-kw').value.trim();if(!v||!S.selKwCat)return;S.kw[S.selKwCat][v]=[v.toLowerCase()];document.getElementById('new-kw').value='';renderKwEditor();renderAll();}
+function removeKw(cat,fr){delete S.kw[cat][fr];renderKwEditor();renderAll();}
+
+// ── DRILLDOWN ──
+function openDrill(fr){
+  const rows=getRows();
+  const frs=calcFranchises(rows);
+  const d=frs[fr];if(!d)return;
+  set('d-title',fr);set('d-sub','カテゴリ: '+d.cat);
+  set('d-cnt',d.count+'件');set('d-rev',fmt(d.rev));
+
+  const te=Object.entries(d.types).sort((a,b)=>b[1]-a[1]);
+  const tm=te[0]?.[1]||1;
+  document.getElementById('d-types').innerHTML=te.map(([nm,cnt],i)=>`
+    <div class="bi"><div class="bm"><span style="font-size:11px;color:${COLS[i%COLS.length]}">${nm}</span><span class="bct">${cnt}件</span></div>
+    <div class="bt"><div class="bf" style="width:${cnt/tm*100}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('');
+
+  const ce=Object.entries(d.ctries).sort((a,b)=>b[1]-a[1]);
+  const ct=ce.reduce((s,[,v])=>s+v,0);
+  document.getElementById('d-ctries').innerHTML=ce.map(([c,cnt],i)=>`
+    <div class="cr"><span class="cf" style="font-size:12px">${FLAGS[c]||'🌍'}</span><span style="width:70px;font-size:11px;color:var(--tx)">${CNAME[c]||c}</span>
+    <div class="ct2"><div class="cfi" style="width:${ct?cnt/ct*100:0}%;background:${COLS[i%COLS.length]}"></div></div>
+    <span class="cp">${pct(cnt,ct)}</span></div>`).join('');
+
+  document.getElementById('d-items').innerHTML=d.items.slice(0,15).map(x=>`
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:10px">
+      <div style="flex:1;color:var(--tx);line-height:1.4">${x.title}<div style="font-size:9px;color:var(--mu);margin-top:1px">${FLAGS[x.ctry]||'🌍'} ${CNAME[x.ctry]||x.ctry||'—'}</div></div>
+      <div style="color:var(--gr);font-weight:500;white-space:nowrap">${fmt(x.price)}</div>
     </div>`).join('');
+  if(d.items.length>15)document.getElementById('d-items').innerHTML+=`<div style="font-size:9px;color:var(--mu);text-align:center;padding:6px">他 ${d.items.length-15}件</div>`;
 
-  if (!STATE.selectedKwCat) return;
-  const franchises = STATE.keywords[STATE.selectedKwCat];
-  document.getElementById('kw-selected-label').textContent = `「${STATE.selectedKwCat}」のフランチャイズ一覧`;
-  document.getElementById('kw-add-row').style.display = 'flex';
+  document.getElementById('drill').classList.add('open');
+}
+function closeDrill(){document.getElementById('drill').classList.remove('open');}
 
-  const tagsEl = document.getElementById('kw-tags-area');
-  tagsEl.innerHTML = Object.keys(franchises).map(f => `
-    <div class="kw-tag">
-      ${f}
-      <button class="kw-tag-del" onclick="removeFranchise('${STATE.selectedKwCat}','${f.replace(/'/g,"\\'")}')">×</button>
-    </div>`).join('') || '<span style="font-size:11px;color:var(--muted)">フランチャイズがありません。下に追加してください。</span>';
+// ── NAV ──
+const PAGE_TITLES={overview:'売上・利益',trend:'月別推移',products:'商品傾向',timing:'曜日・時間帯',ranking:'単価ランキング',buyers:'リピーター',countries:'国別分析',unclassified:'未分類手動割当',files:'ファイル管理',keywords:'キーワード設定'};
+function nav(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.getElementById('p-'+page).classList.add('act');
+  el.classList.add('act');
+  set('tbt',PAGE_TITLES[page]||page);
 }
 
-function selectKwCat(cat) {
-  STATE.selectedKwCat = cat;
-  renderKwEditor();
-}
+function applyF(){S.dateFrom=document.getElementById('df').value||null;S.dateTo=document.getElementById('dt').value||null;renderAll();}
+function clearF(){document.getElementById('df').value='';document.getElementById('dt').value='';S.dateFrom=null;S.dateTo=null;renderAll();}
 
-function addCategory() {
-  const input = document.getElementById('new-cat-input');
-  const name = input.value.trim();
-  if (!name || STATE.keywords[name]) return;
-  STATE.keywords[name] = {};
-  input.value = '';
-  STATE.selectedKwCat = name;
-  renderKwEditor();
-}
-
-function addKeyword() {
-  const input = document.getElementById('new-kw-input');
-  const name = input.value.trim();
-  if (!name || !STATE.selectedKwCat) return;
-  if (!STATE.keywords[STATE.selectedKwCat][name]) {
-    STATE.keywords[STATE.selectedKwCat][name] = [name.toLowerCase()];
-  }
-  input.value = '';
-  renderKwEditor();
-  renderAll();
-}
-
-function removeFranchise(cat, name) {
-  delete STATE.keywords[cat][name];
-  renderKwEditor();
-  renderAll();
-}
-
-function renderKwPreview() {
-  const rows = getFilteredRows();
-  const orderItems = rows.filter(r => (r['Type']||'').trim()==='Order' && r['Item title'] && r['Item title']!=='--' && r['Transaction ID']!=='--');
-  const unmatched = orderItems.filter(r => getFranchise(r['Item title']).franchise === '未分類').slice(0,20);
-  const el = document.getElementById('kw-preview');
-  if (!el) return;
-  if (unmatched.length === 0) {
-    el.innerHTML = '<div class="alert alert-ok">全商品が識別済みです 🎉</div>';
-    return;
-  }
-  el.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">未分類の商品（${unmatched.length}件表示）—キーワードを追加してください</div>`
-    + unmatched.map(r => `<div style="font-size:11px;padding:7px 0;border-bottom:1px solid var(--border);color:var(--muted2)">${r['Item title']}</div>`).join('');
-}
-
-// ══ NAVIGATION ══
-function showPage(page) {
-  STATE.currentPage = page;
-  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const pageEl = document.getElementById(`page-${page}`);
-  if (pageEl) pageEl.classList.add('active');
-  const navItems = document.querySelectorAll('.nav-item');
-  const pageNames = { overview:'売上・利益', products:'商品傾向', countries:'国別分析', files:'CSVファイル管理', keywords:'キーワード設定' };
-  navItems.forEach((el, i) => {
-    const pages = ['overview','products','countries','files','keywords'];
-    if (pages[i] === page) el.classList.add('active');
-  });
-  const titleEl = document.getElementById('topbarTitle');
-  if (titleEl) titleEl.textContent = pageNames[page]||page;
-
-  if (page === 'keywords') renderKwEditor();
-}
-
-function applyFilters() {
-  STATE.dateFrom = document.getElementById('dateFrom').value || null;
-  STATE.dateTo = document.getElementById('dateTo').value || null;
-  const rows = getFilteredRows();
-  renderOverview(rows);
-  renderProducts(rows);
-  renderCountries(rows);
-  renderKwPreview();
-}
-
-function clearDates() {
-  document.getElementById('dateFrom').value = '';
-  document.getElementById('dateTo').value = '';
-  STATE.dateFrom = null;
-  STATE.dateTo = null;
-  applyFilters();
-}
-
-// ══ INIT ══
-document.addEventListener('DOMContentLoaded', function() {
-  const zone = document.getElementById('upload-zone');
-  const input = document.getElementById('fileInput');
-  const btn = document.getElementById('upload-btn');
-
-  // Click on zone or button → open file picker
-  zone.addEventListener('click', function() { input.click(); });
-  btn.addEventListener('click', function(e) { e.stopPropagation(); input.click(); });
-
-  // File selected via picker
-  input.addEventListener('change', function() {
-    if (this.files && this.files.length > 0) {
-      handleFiles(this.files);
-      this.value = ''; // reset so same file can be re-selected
-    }
-  });
-
-  // Drag and drop
-  zone.addEventListener('dragover', function(e) {
-    e.preventDefault();
-    zone.classList.add('drag');
-  });
-  zone.addEventListener('dragleave', function() {
-    zone.classList.remove('drag');
-  });
-  zone.addEventListener('drop', function(e) {
-    e.preventDefault();
-    zone.classList.remove('drag');
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
-    }
-  });
-
+// ── FILE INPUT INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  const zone=document.getElementById('upzone');
+  const input=document.getElementById('finput');
+  const btn=document.getElementById('upbtn');
+  btn.addEventListener('click',e=>{e.stopPropagation();input.click();});
+  zone.addEventListener('click',()=>input.click());
+  input.addEventListener('change',function(){if(this.files&&this.files.length){handleFiles(this.files);this.value='';}});
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files);});
   renderAll();
 });
 </script>
