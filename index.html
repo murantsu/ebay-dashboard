@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>eBay Multi-Account Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
@@ -123,7 +123,7 @@ select:hover,input[type=date]:hover{border-color:var(--border2)}
 
 /* ── KPI ── */
 .kpi-label{font-size:10px;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px}
-.kpi-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1}
+.kpi-val{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;letter-spacing:0;line-height:1}
 .kpi-sub{font-size:10px;color:var(--muted);margin-top:5px}
 .kpi-delta{font-size:11px;margin-top:6px}
 .kpi-delta.up{color:var(--green)}
@@ -385,16 +385,16 @@ select:hover,input[type=date]:hover{border-color:var(--border2)}
       <div class="card" style="background:linear-gradient(135deg,#0f1f14 0%,#0a140f 100%);border-color:#1a3a20">
         <div class="card-title" style="color:var(--green)">月間純利益</div>
         <div style="text-align:center;padding:24px 0">
-          <div style="font-family:'Syne',sans-serif;font-size:44px;font-weight:800;color:var(--green);letter-spacing:-2px;line-height:1" id="big-profit">—</div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:38px;font-weight:900;color:var(--green);letter-spacing:-1px;line-height:1" id="big-profit">—</div>
           <div style="font-size:10px;color:#34d47a80;letter-spacing:2px;text-transform:uppercase;margin-top:8px">Net Profit</div>
           <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div style="background:#ffffff08;border-radius:8px;padding:12px;text-align:center">
               <div style="font-size:10px;color:#34d47a80;margin-bottom:4px">利益率</div>
-              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--green)" id="big-margin">—</div>
+              <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--green)" id="big-margin">—</div>
             </div>
             <div style="background:#ffffff08;border-radius:8px;padding:12px;text-align:center">
               <div style="font-size:10px;color:#34d47a80;margin-bottom:4px">広告費率</div>
-              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--accent2)" id="big-adrate">—</div>
+              <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--accent2)" id="big-adrate">—</div>
             </div>
           </div>
         </div>
@@ -1007,8 +1007,8 @@ function renderOverview(rows) {
       <div class="brow"><span class="brow-lbl">返金（Refund）</span><span class="brow-val c-red">${s.refund<0?'-':''}${fmt(s.refund)}</span></div>
       <div class="brow"><span class="brow-lbl">eBay税収（参考）</span><span class="brow-val" style="color:var(--muted2)">${fmt(s.ebay_tax)}</span></div>
       <div style="margin-top:14px;padding-top:14px;border-top:2px solid var(--accent);display:flex;justify-content:space-between;align-items:center">
-        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px">純利益</span>
-        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--green)">+${fmt(s.profit)}</span>
+        <span style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:13px">純利益</span>
+        <span style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:18px;color:var(--green)">+${fmt(s.profit)}</span>
       </div>`;
   }
 
