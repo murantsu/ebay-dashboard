@@ -216,13 +216,13 @@ input[type=text]:focus{border-color:var(--acc)}
     <div class="page" id="p-trend">
       <div id="ab-trend" class="accbar"></div>
       <div class="card" style="margin-bottom:12px">
-        <div class="ct">月別売上推移 <div class="tabs" style="margin-bottom:0"><div class="tab sel" onclick="setTrendMode('revenue',this)">売上</div><div class="tab" onclick="setTrendMode('profit',this)">純利益</div><div class="tab" onclick="setTrendMode('orders',this)">注文数</div></div></div>
+        <div class="ct">月別 売上 ＋ 注文数 推移 <span style="font-size:9px;color:var(--mu);font-weight:400">棒=売上　折れ線=注文数</span></div>
         <div class="ch" style="height:280px"><canvas id="c-trend"></canvas></div>
       </div>
       <div class="g3">
-        <div class="card"><div class="kl">最高月</div><div class="kv c-acc" id="tr-best" style="font-size:16px">—</div><div class="ks" id="tr-best-v">—</div></div>
-        <div class="card"><div class="kl">最低月</div><div class="kv c-rd" id="tr-worst" style="font-size:16px">—</div><div class="ks" id="tr-worst-v">—</div></div>
-        <div class="card"><div class="kl">月平均</div><div class="kv c-gr" id="tr-avg" style="font-size:16px">—</div><div class="ks">Monthly Average</div></div>
+        <div class="card"><div class="kl">最高売上月</div><div class="kv c-acc" id="tr-best" style="font-size:16px">—</div><div class="ks" id="tr-best-v">—</div></div>
+        <div class="card"><div class="kl">最低売上月</div><div class="kv c-rd" id="tr-worst" style="font-size:16px">—</div><div class="ks" id="tr-worst-v">—</div></div>
+        <div class="card"><div class="kl">月平均売上</div><div class="kv c-gr" id="tr-avg" style="font-size:16px">—</div><div class="ks">Monthly Average</div></div>
       </div>
     </div>
 
@@ -293,8 +293,8 @@ input[type=text]:focus{border-color:var(--acc)}
       <div id="ab-buyers" class="accbar"></div>
       <div class="g3" style="margin-bottom:12px">
         <div class="card"><div class="kl">ユニーク購入者数</div><div class="kv c-acc" id="b-uniq" style="font-size:22px">—</div></div>
-        <div class="card"><div class="kl">リピーター数（2回以上）</div><div class="kv c-gr" id="b-rep" style="font-size:22px">—</div><div class="ks" id="b-rep-r">—</div></div>
-        <div class="card"><div class="kl">最多購入者</div><div class="kv c-acc2" id="b-top" style="font-size:14px;word-break:break-all">—</div><div class="ks" id="b-top-v">—</div></div>
+        <div class="card"><div class="kl">リピーター数（2注文以上）</div><div class="kv c-gr" id="b-rep" style="font-size:22px">—</div><div class="ks" id="b-rep-r">—</div></div>
+        <div class="card"><div class="kl">最多注文者</div><div class="kv c-acc2" id="b-top" style="font-size:14px;word-break:break-all">—</div><div class="ks" id="b-top-v">—</div></div>
       </div>
       <div class="card">
         <div class="ct">リピーター一覧 <span style="font-size:9px;color:var(--mu);font-weight:400">（2回以上購入）</span></div>
@@ -386,12 +386,47 @@ input[type=text]:focus{border-color:var(--acc)}
       <div class="card" style="padding:12px"><div class="kl">売上合計</div><div class="kv c-gr" id="d-rev" style="font-size:24px">—</div></div>
     </div>
     <div class="g2" style="margin-bottom:12px">
-      <div class="card" style="padding:12px"><div class="ct" style="font-size:11px">アイテム種別</div><div id="d-types"></div></div>
-      <div class="card" style="padding:12px"><div class="ct" style="font-size:11px">出荷先国</div><div id="d-ctries"></div></div>
+      <div class="card" style="padding:12px"><div class="ct" style="font-size:11px" id="d-col1-title">アイテム種別</div><div id="d-types"></div></div>
+      <div class="card" style="padding:12px"><div class="ct" style="font-size:11px" id="d-col2-title">出荷先国</div><div id="d-ctries"></div></div>
     </div>
     <div class="card" style="padding:12px">
       <div style="font-size:11px;font-weight:500;color:var(--mu2);margin-bottom:8px">売れた商品リスト</div>
       <div id="d-items"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 国別ドリルダウン モーダル -->
+<div id="ctry-drill" onclick="if(event.target===this)closeCtryDrill()" style="display:none;position:fixed;inset:0;z-index:200;background:#000000b0;backdrop-filter:blur(6px);align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto">
+  <div class="dp" style="width:760px">
+    <div class="dh">
+      <div>
+        <div class="dt" id="cd-title">—</div>
+        <div class="ds" id="cd-sub">—</div>
+      </div>
+      <button class="dc" onclick="closeCtryDrill()">✕ 閉じる</button>
+    </div>
+    <!-- KPI行 -->
+    <div class="g4" style="margin-bottom:12px">
+      <div class="card" style="padding:10px"><div class="kl">注文件数</div><div class="kv c-acc4" id="cd-cnt" style="font-size:20px">—</div></div>
+      <div class="card" style="padding:10px"><div class="kl">売上合計</div><div class="kv c-gr" id="cd-rev" style="font-size:20px">—</div></div>
+      <div class="card" style="padding:10px"><div class="kl">平均注文額</div><div class="kv c-acc" id="cd-avg" style="font-size:20px">—</div></div>
+      <div class="card" style="padding:10px"><div class="kl">返金率</div><div class="kv c-rd" id="cd-ref" style="font-size:20px">—</div></div>
+    </div>
+    <!-- 人気フランチャイズ + アイテム種別 -->
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card" style="padding:12px"><div class="ct" style="font-size:11px">人気フランチャイズ TOP10</div><div id="cd-franchises"></div></div>
+      <div class="card" style="padding:12px"><div class="ct" style="font-size:11px">アイテム種別</div><div id="cd-types"></div></div>
+    </div>
+    <!-- 月別注文数 -->
+    <div class="card" style="padding:12px;margin-bottom:12px">
+      <div class="ct" style="font-size:11px">月別注文数推移</div>
+      <div class="ch" style="height:160px"><canvas id="cd-monthly"></canvas></div>
+    </div>
+    <!-- 商品リスト -->
+    <div class="card" style="padding:12px">
+      <div style="font-size:11px;font-weight:500;color:var(--mu2);margin-bottom:8px">売れた商品リスト（上位20件）</div>
+      <div id="cd-items"></div>
     </div>
   </div>
 </div>
@@ -402,8 +437,8 @@ input[type=text]:focus{border-color:var(--acc)}
 // ═══════════════════════════════════════
 const COLS=['#f0c040','#e8457a','#38e8b0','#6a7fff','#f08030','#34d47a','#00c4e8','#b06aff','#ff6060','#80e060','#e0a0ff','#40c8ff','#ffaaaa','#aaffcc','#aaccff'];
 const ACOLS=['#f0c040','#e8457a','#38e8b0','#6a7fff','#f08030','#b06aff'];
-const FLAGS={US:'🇺🇸',CA:'🇨🇦',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',AU:'🇦🇺',TH:'🇹🇭',JP:'🇯🇵',KR:'🇰🇷',IT:'🇮🇹',ES:'🇪🇸',GR:'🇬🇷',AE:'🇦🇪',SA:'🇸🇦',HK:'🇭🇰',IE:'🇮🇪',RO:'🇷🇴',SG:'🇸🇬',NL:'🇳🇱',PL:'🇵🇱',MX:'🇲🇽',BR:'🇧🇷',AR:'🇦🇷',NO:'🇳🇴',SE:'🇸🇪',DK:'🇩🇰',FI:'🇫🇮',PT:'🇵🇹',BE:'🇧🇪',CH:'🇨🇭',AT:'🇦🇹',CZ:'🇨🇿',HU:'🇭🇺',PH:'🇵🇭',MY:'🇲🇾',ID:'🇮🇩',TW:'🇹🇼',CN:'🇨🇳'};
-const CNAME={US:'アメリカ',CA:'カナダ',GB:'イギリス',DE:'ドイツ',FR:'フランス',AU:'オーストラリア',TH:'タイ',JP:'日本',KR:'韓国',IT:'イタリア',ES:'スペイン',GR:'ギリシャ',AE:'UAE',SA:'サウジアラビア',HK:'香港',IE:'アイルランド',RO:'ルーマニア',SG:'シンガポール',NL:'オランダ',PL:'ポーランド',MX:'メキシコ',BR:'ブラジル',AR:'アルゼンチン',NO:'ノルウェー',SE:'スウェーデン',DK:'デンマーク',FI:'フィンランド',PT:'ポルトガル',BE:'ベルギー',CH:'スイス',AT:'オーストリア',CZ:'チェコ',HU:'ハンガリー',PH:'フィリピン',MY:'マレーシア',ID:'インドネシア',TW:'台湾',CN:'中国'};
+const FLAGS={US:'🇺🇸',CA:'🇨🇦',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',AU:'🇦🇺',TH:'🇹🇭',JP:'🇯🇵',KR:'🇰🇷',IT:'🇮🇹',ES:'🇪🇸',GR:'🇬🇷',AE:'🇦🇪',SA:'🇸🇦',HK:'🇭🇰',IE:'🇮🇪',RO:'🇷🇴',SG:'🇸🇬',NL:'🇳🇱',PL:'🇵🇱',MX:'🇲🇽',BR:'🇧🇷',AR:'🇦🇷',NO:'🇳🇴',SE:'🇸🇪',DK:'🇩🇰',FI:'🇫🇮',PT:'🇵🇹',BE:'🇧🇪',CH:'🇨🇭',AT:'🇦🇹',CZ:'🇨🇿',HU:'🇭🇺',PH:'🇵🇭',MY:'🇲🇾',ID:'🇮🇩',TW:'🇹🇼',CN:'🇨🇳',TR:'🇹🇷',MO:'🇲🇴',KW:'🇰🇼',LT:'🇱🇹',CL:'🇨🇱',LU:'🇱🇺',IS:'🇮🇸',PE:'🇵🇪',BH:'🇧🇭',NZ:'🇳🇿',ZA:'🇿🇦',IL:'🇮🇱',QA:'🇶🇦',OM:'🇴🇲',EG:'🇪🇬',MA:'🇲🇦',UA:'🇺🇦',RS:'🇷🇸',SK:'🇸🇰',HR:'🇭🇷',SI:'🇸🇮',LV:'🇱🇻',EE:'🇪🇪',BG:'🇧🇬',BY:'🇧🇾',VN:'🇻🇳',IN:'🇮🇳',PK:'🇵🇰',BD:'🇧🇩',LK:'🇱🇰',MM:'🇲🇲',KH:'🇰🇭',CO:'🇨🇴',VE:'🇻🇪',EC:'🇪🇨',UY:'🇺🇾',BO:'🇧🇴',PY:'🇵🇾',GT:'🇬🇹',CR:'🇨🇷',DO:'🇩🇴',PA:'🇵🇦',JM:'🇯🇲',TT:'🇹🇹',CY:'🇨🇾',MT:'🇲🇹',MK:'🇲🇰',AL:'🇦🇱',GE:'🇬🇪',AM:'🇦🇲',AZ:'🇦🇿',KZ:'🇰🇿',UZ:'🇺🇿',KG:'🇰🇬',MN:'🇲🇳',IQ:'🇮🇶',JO:'🇯🇴',LB:'🇱🇧',YE:'🇾🇪',LY:'🇱🇾',TN:'🇹🇳',DZ:'🇩🇿',NG:'🇳🇬',GH:'🇬🇭',KE:'🇰🇪',ET:'🇪🇹',TZ:'🇹🇿',UG:'🇺🇬',ZW:'🇿🇼',ZM:'🇿🇲',MZ:'🇲🇿',AO:'🇦🇴',CI:'🇨🇮',CM:'🇨🇲',SN:'🇸🇳'};
+const CNAME={US:'アメリカ',CA:'カナダ',GB:'イギリス',DE:'ドイツ',FR:'フランス',AU:'オーストラリア',TH:'タイ',JP:'日本',KR:'韓国',IT:'イタリア',ES:'スペイン',GR:'ギリシャ',AE:'UAE',SA:'サウジアラビア',HK:'香港',IE:'アイルランド',RO:'ルーマニア',SG:'シンガポール',NL:'オランダ',PL:'ポーランド',MX:'メキシコ',BR:'ブラジル',AR:'アルゼンチン',NO:'ノルウェー',SE:'スウェーデン',DK:'デンマーク',FI:'フィンランド',PT:'ポルトガル',BE:'ベルギー',CH:'スイス',AT:'オーストリア',CZ:'チェコ',HU:'ハンガリー',PH:'フィリピン',MY:'マレーシア',ID:'インドネシア',TW:'台湾',CN:'中国',TR:'トルコ',MO:'マカオ',KW:'クウェート',LT:'リトアニア',CL:'チリ',LU:'ルクセンブルク',IS:'アイスランド',PE:'ペルー',BH:'バーレーン',NZ:'ニュージーランド',ZA:'南アフリカ',IL:'イスラエル',QA:'カタール',OM:'オマーン',EG:'エジプト',MA:'モロッコ',UA:'ウクライナ',RS:'セルビア',SK:'スロバキア',HR:'クロアチア',SI:'スロベニア',LV:'ラトビア',EE:'エストニア',BG:'ブルガリア',BY:'ベラルーシ',VN:'ベトナム',IN:'インド',PK:'パキスタン',BD:'バングラデシュ',LK:'スリランカ',MM:'ミャンマー',KH:'カンボジア',CO:'コロンビア',VE:'ベネズエラ',EC:'エクアドル',UY:'ウルグアイ',BO:'ボリビア',PY:'パラグアイ',GT:'グアテマラ',CR:'コスタリカ',DO:'ドミニカ共和国',PA:'パナマ',JM:'ジャマイカ',TT:'トリニダード・トバゴ',CY:'キプロス',MT:'マルタ',MK:'北マケドニア',AL:'アルバニア',GE:'ジョージア',AM:'アルメニア',AZ:'アゼルバイジャン',KZ:'カザフスタン',UZ:'ウズベキスタン',KG:'キルギス',MN:'モンゴル',IQ:'イラク',JO:'ヨルダン',LB:'レバノン',YE:'イエメン',LY:'リビア',TN:'チュニジア',DZ:'アルジェリア',NG:'ナイジェリア',GH:'ガーナ',KE:'ケニア',ET:'エチオピア',TZ:'タンザニア',UG:'ウガンダ',ZW:'ジンバブエ',ZM:'ザンビア',MZ:'モザンビーク',AO:'アンゴラ',CI:'コートジボワール',CM:'カメルーン',SN:'セネガル'};
 const ITYPES=['Acrylic Stand','Acrylic Keychain','Acrylic Block','Acrylic Card','Keychain','Coaster','T-shirt','Tee','Bromide','Poster','Clear File','Charm','Rubber Charm','Metal Charm','Wire Charm','Tapestry','Sticker','Badge','Can Badge','Card','Postcard','Lottery','Art Book','Catalog','Tote Bag','Desk Mat','Blanket','Towel','Pen','Mouse Pad','Pin','Pick','Figure','Puzzle','Sleeve','Binder','Box','Set','Stand','Plush','Cushion','Mug','Bookmark','Strap','Mirror','Brush','Notepad','Shikishi','Canvas','Board','Statue','Mat','Doll'];
 const DAYS=['日','月','火','水','木','金','土'];
 
@@ -926,15 +961,26 @@ function calcItems(rows){
 function calcBuyers(rows){
   const m={};
   for(const r of rows){
-    if((r['Type']||'').trim()!=='Order'||!r['Transaction ID']||r['Transaction ID']==='--')continue;
+    if((r['Type']||'').trim()!=='Order')continue;
     const name=(r['Buyer name']||'').trim(),user=(r['Buyer username']||'').trim();
     if(!name&&!user)continue;
     const key=name||user;
-    if(!m[key])m[key]={name:key,user,count:0,total:0,ctries:new Set()};
-    m[key].count++;m[key].total+=toF(r['Item subtotal']);
+    if(!m[key])m[key]={name:key,user,orders:new Set(),qty:0,total:0,ctries:new Set()};
+    // 注文回数：Order number単位（同一Order numberは1注文）
+    const orderNo=(r['Order number']||'').trim();
+    if(orderNo&&orderNo!=='--')m[key].orders.add(orderNo);
+    // 購入個数：Quantityの合計（Transaction IDがある行のみ）
+    if(r['Transaction ID']&&r['Transaction ID']!=='--'){
+      const qty=parseInt(r['Quantity']||'1')||1;
+      m[key].qty+=qty;
+      m[key].total+=toF(r['Item subtotal']);
+    }
     const c=(r['Ship to country']||'').trim();if(c&&c!=='--')m[key].ctries.add(c);
   }
-  return Object.values(m).sort((a,b)=>b.count-a.count);
+  return Object.values(m)
+    .map(b=>({...b,orderCount:b.orders.size}))
+    .filter(b=>b.orderCount>=2)
+    .sort((a,b)=>b.orderCount-a.orderCount);
 }
 
 // ═══════════════════════════════════════
@@ -1047,41 +1093,34 @@ function renderTrend(rows){
     ['tr-best','tr-worst','tr-avg'].forEach(id=>set(id,'—'));
     return;
   }
-  const mode=S.trendMode;
-  const vals=keys.map(k=>{
-    const m=monthly[k];
-    const rev=m.sub+m.ship;
-    const fees=m.fvf+m.intl+m.store+m.promo+m.ins;
-    const profit=rev+fees+m.ref;
-    if(mode==='revenue')return rev;
-    if(mode==='profit')return profit;
-    return m.orders;
+  const labels=keys.map(k=>k.replace('-','年')+'月');
+  const revVals=keys.map(k=>{const m=monthly[k];return+(m.sub+m.ship).toFixed(0);});
+  const ordVals=keys.map(k=>monthly[k].orders);
+  const profitVals=keys.map(k=>{const m=monthly[k];const rev=m.sub+m.ship;const fees=m.fvf+m.intl+m.store+m.promo+m.ins;return+(rev+fees+m.ref).toFixed(0);});
+
+  makeChart('c-trend',{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'売上',data:revVals,backgroundColor:'#34d47a99',borderColor:'#34d47a',borderWidth:1,borderRadius:3,yAxisID:'y'},
+      {label:'純利益',data:profitVals,backgroundColor:'#6a7fff88',borderColor:'#6a7fff',borderWidth:1,borderRadius:3,yAxisID:'y'},
+      {label:'注文数',data:ordVals,type:'line',borderColor:'#f0c040',backgroundColor:'transparent',tension:.3,pointRadius:3,pointBackgroundColor:'#f0c040',borderWidth:2,yAxisID:'y1'},
+    ]},
+    options:{
+      plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:8,boxWidth:9,color:'var(--mu2)'}}},
+      scales:{
+        x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:9}}},
+        y:{grid:{color:'#252a3a'},position:'left',ticks:{color:'#5a6280',font:{size:10},callback:v=>'$'+Math.round(v/1000)+'k'}},
+        y1:{grid:{display:false},position:'right',ticks:{color:'#f0c040',font:{size:9},callback:v=>v+'件'}},
+      }
+    }
   });
-  const labels=keys.map(k=>k.replace('-','年')+('月'));
-  const colors=vals.map(v=>v>=0?'#34d47acc':'#f05060cc');
-  const borderColors=vals.map(v=>v>=0?'#34d47a':'#f05060');
 
-  makeChart('c-trend',{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:colors,borderColor:borderColors,borderWidth:1,borderRadius:4}]},
-    options:{plugins:{legend:{display:false}},
-      scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}},
-               y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10},callback:v=>mode==='orders'?v:'$'+Math.round(v/1000)+'k'}}}}
-  });
-
-  const maxIdx=vals.indexOf(Math.max(...vals));
-  const minIdx=vals.indexOf(Math.min(...vals));
-  set('tr-best',labels[maxIdx]||'—');
-  set('tr-best-v',mode==='orders'?vals[maxIdx]+'件':fmt(vals[maxIdx]));
-  set('tr-worst',labels[minIdx]||'—');
-  set('tr-worst-v',mode==='orders'?vals[minIdx]+'件':fmt(vals[minIdx]));
-  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
-  set('tr-avg',mode==='orders'?Math.round(avg)+'件':fmt(avg));
-}
-
-function setTrendMode(m,el){
-  S.trendMode=m;
-  document.querySelectorAll('#p-trend .tab').forEach(t=>t.classList.remove('sel'));
-  el.classList.add('sel');
-  renderTrend(getRows());
+  const maxIdx=revVals.indexOf(Math.max(...revVals));
+  const minIdx=revVals.indexOf(Math.min(...revVals));
+  set('tr-best',labels[maxIdx]||'—');set('tr-best-v',fmt(revVals[maxIdx]));
+  set('tr-worst',labels[minIdx]||'—');set('tr-worst-v',fmt(revVals[minIdx]));
+  const avg=revVals.reduce((a,b)=>a+b,0)/revVals.length;
+  set('tr-avg',fmt(avg));
 }
 
 // ── PRODUCTS ──
@@ -1138,13 +1177,11 @@ function renderTiming(rows){
   // 通貨別
   const currEntries=Object.entries(currs).sort((a,b)=>b[1].totalUSD-a[1].totalUSD);
   makeChart('c-curr',{type:'doughnut',data:{
-    labels:currEntries.map(([k])=>k),
+    labels:currEntries.map(([k,v])=>`${k}  $${Math.round(v.totalUSD).toLocaleString()}`),
     datasets:[{data:currEntries.map(([,v])=>Math.round(v.totalUSD)),
       backgroundColor:COLS.slice(0,currEntries.length).map(c=>c+'cc'),
       borderColor:COLS.slice(0,currEntries.length),borderWidth:1}]},
-    options:{cutout:'60%',plugins:{legend:{position:'right',labels:{font:{size:10},padding:8,boxWidth:10,color:'var(--mu2)',
-      generateLabels:chart=>{const d=chart.data;return d.labels.map((l,i)=>({text:`${l}  $${Math.round(d.datasets[0].data[i]).toLocaleString()}`,fillStyle:d.datasets[0].backgroundColor[i],strokeStyle:d.datasets[0].borderColor[i],lineWidth:1,index:i}));}}}}
-    }
+    options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8,boxWidth:10,color:'var(--mu2)'}}}}
   });
   const nonUSD=currEntries.filter(([k])=>k!=='USD');
   if(nonUSD.length){set('t-topcurr',nonUSD[0][0]);set('t-topcurr-v',nonUSD[0][1].count+'件 / $'+Math.round(nonUSD[0][1].totalUSD).toLocaleString());}
@@ -1249,22 +1286,40 @@ function renderRanking(rows){
 
 // ── BUYERS ──
 function renderBuyers(rows){
-  const buyers=calcBuyers(rows);
-  const repeaters=buyers.filter(b=>b.count>=2);
-  const uniq=buyers.length;
+  // calcBuyers now returns repeaters only (orderCount>=2)
+  const repeaters=calcBuyers(rows);
+
+  // For uniq count, count all buyers regardless
+  const allBuyers={};
+  for(const r of rows){
+    if((r['Type']||'').trim()!=='Order')continue;
+    const name=(r['Buyer name']||'').trim(),user=(r['Buyer username']||'').trim();
+    const key=name||user;if(!key)continue;
+    if(!allBuyers[key])allBuyers[key]={orders:new Set()};
+    const on=(r['Order number']||'').trim();if(on&&on!=='--')allBuyers[key].orders.add(on);
+  }
+  const uniq=Object.keys(allBuyers).length;
+
   set('b-uniq',uniq.toLocaleString());
   set('b-rep',repeaters.length.toLocaleString());
   set('b-rep-r','全体の'+pct(repeaters.length,uniq));
-  if(buyers[0]){set('b-top',buyers[0].name);set('b-top-v',buyers[0].count+'回 / '+fmt(buyers[0].total));}
+  if(repeaters[0]){
+    set('b-top',repeaters[0].name);
+    set('b-top-v',`${repeaters[0].orderCount}注文 / ${repeaters[0].qty}個 / ${fmt(repeaters[0].total)}`);
+  }
 
   const el=document.getElementById('buyer-list');
   if(!repeaters.length){el.innerHTML='<div class="emp"><div class="ed">リピーターなし</div></div>';return;}
   el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-    ${repeaters.slice(0,30).map((b,i)=>`
+    ${repeaters.slice(0,60).map((b,i)=>`
       <div style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px">
-        <div style="font-size:11px;color:${COLS[i%COLS.length]};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</div>
-        <div style="font-size:9px;color:var(--mu);margin-top:2px">${b.count}回購入 / ${fmt(b.total)}</div>
-        <div style="font-size:9px;color:var(--mu)">@${b.user}</div>
+        <div style="font-size:11px;color:${COLS[i%COLS.length]};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">${b.name}</div>
+        <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+          <span style="font-size:10px;background:var(--s3);border-radius:4px;padding:1px 6px;color:var(--mu2)">🛒 ${b.orderCount}注文</span>
+          <span style="font-size:10px;background:var(--s3);border-radius:4px;padding:1px 6px;color:var(--mu2)">📦 ${b.qty}個</span>
+        </div>
+        <div style="font-size:10px;color:${COLS[i%COLS.length]};margin-top:3px;font-weight:500">${fmt(b.total)}</div>
+        <div style="font-size:9px;color:var(--mu);margin-top:1px">@${b.user}</div>
       </div>`).join('')}
   </div>`;
 }
@@ -1275,9 +1330,11 @@ function renderCountries(rows){
   const total=Object.values(ctries).reduce((s,v)=>s+v,0);
   const entries=Object.entries(ctries).sort((a,b)=>b[1]-a[1]);
   document.getElementById('ctry-list').innerHTML=entries.length?entries.map(([c,cnt],i)=>`
-    <div class="cr"><span class="cf">${FLAGS[c]||'🌍'}</span><span class="cn">${CNAME[c]||c}</span>
+    <div class="cr" onclick="openCtryDrill('${c}')" style="cursor:pointer;border-radius:6px;padding:3px 4px;transition:background .15s" onmouseover="this.style.background='#1d2233'" onmouseout="this.style.background='transparent'">
+      <span class="cf">${FLAGS[c]||'🌍'}</span><span class="cn">${CNAME[c]||c}</span>
     <div class="ct2"><div class="cfi" style="width:${total?cnt/total*100:0}%;background:${COLS[i%COLS.length]}"></div></div>
-    <span class="cp">${pct(cnt,total)}</span><span class="cc">${cnt}件</span></div>`).join('')
+    <span class="cp">${pct(cnt,total)}</span><span class="cc">${cnt}件</span>
+    <span style="font-size:9px;color:var(--mu);margin-left:4px">▶</span></div>`).join('')
     :'<div class="emp"><div class="ed">データなし</div></div>';
 
   if(entries.length){
@@ -1402,7 +1459,162 @@ function openDrill(fr){
 
   document.getElementById('drill').classList.add('open');
 }
+// ── COUNTRY DRILLDOWN ──
+function openCtryDrill(code){
+  const rows=getRows();
+  const flag=FLAGS[code]||'🌍';
+  const name=CNAME[code]||code;
+  set('cd-title',flag+' '+name);
+
+  // Filter order rows for this country
+  const ctryOrders=rows.filter(r=>(r['Type']||'').trim()==='Order'&&(r['Ship to country']||'').trim()===code&&r['Transaction ID']&&r['Transaction ID']!=='--');
+  const ctryRefunds=rows.filter(r=>(r['Type']||'').trim()==='Refund'&&(r['Ship to country']||'').trim()===code);
+  const total=ctryOrders.reduce((s,r)=>s+toF(r['Item subtotal']),0);
+  const cnt=ctryOrders.length;
+  const refRate=cnt?ctryRefunds.length/cnt*100:0;
+
+  set('cd-sub',`${name} — 全期間の詳細データ`);
+  set('cd-cnt',cnt+'件');
+  set('cd-rev',fmt(total));
+  set('cd-avg',cnt?fmt(total/cnt):'—');
+  set('cd-ref',refRate.toFixed(1)+'%');
+
+  // フランチャイズ集計
+  const frMap={};
+  ctryOrders.forEach(r=>{
+    if(!r['Item title']||r['Item title']==='--')return;
+    const{fr}=getFranchise(r['Item title']);
+    frMap[fr]=(frMap[fr]||0)+1;
+  });
+  const frEntries=Object.entries(frMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxFr=frEntries[0]?.[1]||1;
+  document.getElementById('cd-franchises').innerHTML=frEntries.length
+    ?frEntries.map(([nm,c],i)=>`
+      <div class="bi"><div class="bm"><span style="font-size:11px;color:${COLS[i%COLS.length]}">${nm}</span><span class="bct">${c}件</span></div>
+      <div class="bt"><div class="bf" style="width:${c/maxFr*100}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('')
+    :'<div class="emp"><div class="ed">データなし</div></div>';
+
+  // アイテム種別集計
+  const typeMap={};
+  ctryOrders.forEach(r=>{
+    if(!r['Item title']||r['Item title']==='--')return;
+    const it=getItemType(r['Item title']);
+    typeMap[it]=(typeMap[it]||0)+1;
+  });
+  const typeEntries=Object.entries(typeMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxT=typeEntries[0]?.[1]||1;
+  document.getElementById('cd-types').innerHTML=typeEntries.length
+    ?typeEntries.map(([nm,c],i)=>`
+      <div class="bi"><div class="bm"><span style="font-size:11px;color:${COLS[i%COLS.length]}">${nm}</span><span class="bct">${c}件</span></div>
+      <div class="bt"><div class="bf" style="width:${c/maxT*100}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('')
+    :'<div class="emp"><div class="ed">データなし</div></div>';
+
+  // 月別注文数
+  const mMap={};
+  ctryOrders.forEach(r=>{
+    const dt=parseDate(r['Transaction creation date']);
+    if(!dt)return;
+    const k=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    mMap[k]=(mMap[k]||0)+1;
+  });
+  const mKeys=Object.keys(mMap).sort();
+  makeChart('cd-monthly',{type:'bar',
+    data:{labels:mKeys.map(k=>k.replace('-','年')+'月'),
+      datasets:[{data:mKeys.map(k=>mMap[k]),backgroundColor:'#6a7fffbb',borderColor:'#6a7fff',borderWidth:1,borderRadius:3}]},
+    options:{plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:9}}},
+              y:{grid:{color:'#252a3a'},ticks:{color:'#5a6280',font:{size:10}}}}}
+  });
+
+  // 商品リスト（単価降順）
+  const itemsSorted=[...ctryOrders].filter(r=>r['Item title']&&r['Item title']!=='--')
+    .sort((a,b)=>toF(b['Item subtotal'])-toF(a['Item subtotal'])).slice(0,20);
+  document.getElementById('cd-items').innerHTML=itemsSorted.length
+    ?itemsSorted.map(r=>`
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:10px">
+        <div style="flex:1;color:var(--tx);line-height:1.4">${r['Item title']}
+          <div style="font-size:9px;color:var(--mu);margin-top:1px">${r['Transaction creation date']||''}</div>
+        </div>
+        <div style="color:var(--gr);font-weight:500;white-space:nowrap">${fmt(toF(r['Item subtotal']))}</div>
+      </div>`).join('')
+    :'<div class="emp"><div class="ed">データなし</div></div>';
+
+  const el=document.getElementById('ctry-drill');
+  el.style.display='flex';
+}
+function closeCtryDrill(){document.getElementById('ctry-drill').style.display='none';}
+
 function closeDrill(){document.getElementById('drill').classList.remove('open');}
+
+function openCtryDrill(ctryCode){
+  const rows=getRows();
+  const flag=FLAGS[ctryCode]||'🌍';
+  const name=CNAME[ctryCode]||ctryCode;
+
+  // Collect order rows for this country
+  const orderRows=rows.filter(r=>(r['Type']||'').trim()==='Order'
+    &&(r['Ship to country']||'').trim()===ctryCode
+    &&r['Item title']&&r['Item title']!=='--'
+    &&r['Transaction ID']&&r['Transaction ID']!=='--');
+  const refRows=rows.filter(r=>(r['Type']||'').trim()==='Refund'
+    &&(r['Ship to country']||'').trim()===ctryCode);
+
+  const totalRev=orderRows.reduce((s,r)=>s+toF(r['Item subtotal']),0);
+  const avgPrice=orderRows.length?totalRev/orderRows.length:0;
+
+  // Franchise breakdown
+  const frMap={};
+  orderRows.forEach(r=>{
+    const{fr}=getFranchise(r['Item title']);
+    if(!frMap[fr])frMap[fr]=0;frMap[fr]++;
+  });
+  const frEntries=Object.entries(frMap).sort((a,b)=>b[1]-a[1]);
+  const maxFr=frEntries[0]?.[1]||1;
+
+  // Item type breakdown
+  const typeMap={};
+  orderRows.forEach(r=>{
+    const it=getItemType(r['Item title']);
+    if(!typeMap[it])typeMap[it]=0;typeMap[it]++;
+  });
+  const typeEntries=Object.entries(typeMap).sort((a,b)=>b[1]-a[1]);
+  const maxType=typeEntries[0]?.[1]||1;
+
+  // Set modal content
+  set('d-title',`${flag} ${name}`);
+  set('d-sub',`国別ドリルダウン — 返金 ${refRows.length}件 / 平均注文額 ${fmt(avgPrice)}`);
+  set('d-cnt',orderRows.length+'件');
+  set('d-rev',fmt(totalRev));
+  set('d-col1-title','フランチャイズ別');
+  set('d-col2-title','アイテム種別');
+
+  document.getElementById('d-types').innerHTML=frEntries.slice(0,10).map(([nm,cnt],i)=>`
+    <div class="bi"><div class="bm">
+      <span style="font-size:11px;color:${COLS[i%COLS.length]};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:75%">${nm}</span>
+      <span class="bct">${cnt}件</span>
+    </div><div class="bt"><div class="bf" style="width:${cnt/maxFr*100}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('')
+    ||'<div class="emp" style="padding:12px 0"><div class="ed">データなし</div></div>';
+
+  document.getElementById('d-ctries').innerHTML=typeEntries.slice(0,10).map(([nm,cnt],i)=>`
+    <div class="bi"><div class="bm">
+      <span style="font-size:11px;color:${COLS[i%COLS.length]}">${nm}</span>
+      <span class="bct">${cnt}件</span>
+    </div><div class="bt"><div class="bf" style="width:${cnt/maxType*100}%;background:${COLS[i%COLS.length]}"></div></div></div>`).join('')
+    ||'<div class="emp" style="padding:12px 0"><div class="ed">データなし</div></div>';
+
+  // Items list — sort by price desc
+  const items=[...orderRows].sort((a,b)=>toF(b['Item subtotal'])-toF(a['Item subtotal'])).slice(0,20);
+  document.getElementById('d-items').innerHTML=items.map(r=>`
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:10px">
+      <div style="flex:1;color:var(--tx);line-height:1.4">${r['Item title']}
+        <div style="font-size:9px;color:var(--mu);margin-top:1px">${r['Transaction creation date']||''}</div>
+      </div>
+      <div style="color:var(--gr);font-weight:500;white-space:nowrap">${fmt(toF(r['Item subtotal']))}</div>
+    </div>`).join('');
+  if(orderRows.length>20)document.getElementById('d-items').innerHTML+=`<div style="font-size:9px;color:var(--mu);text-align:center;padding:6px">他 ${orderRows.length-20}件</div>`;
+
+  document.getElementById('drill').classList.add('open');
+}
 
 // ── NAV ──
 const PAGE_TITLES={overview:'売上・利益',trend:'月別推移',products:'商品傾向',timing:'詳細分析',ranking:'単価ランキング',buyers:'リピーター',countries:'国別分析',unclassified:'未分類手動割当',files:'ファイル管理',keywords:'キーワード設定'};
